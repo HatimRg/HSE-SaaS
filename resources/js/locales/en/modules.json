@@ -1,0 +1,84 @@
+{
+  "kpi": {
+    "title": "Safety KPI",
+    "newReport": "New Report",
+    "period": "Period",
+    "totalHours": "Total Hours",
+    "injuries": "Injuries",
+    "firstAids": "First Aids",
+    "nearMisses": "Near Misses",
+    "observations": "Observations",
+    "trir": "TRIR",
+    "frequencyRate": "Frequency Rate",
+    "severityRate": "Severity Rate",
+    "submitForApproval": "Submit for Approval",
+    "approve": "Approve",
+    "reject": "Reject"
+  },
+  "sor": {
+    "title": "Safety Observations",
+    "newReport": "New Observation",
+    "reference": "Reference",
+    "type": "Type",
+    "severity": "Severity",
+    "location": "Location",
+    "dueDate": "Due Date",
+    "overdue": "Overdue",
+    "photos": "Photos",
+    "correctiveAction": "Corrective Action",
+    "closeReport": "Close Report",
+    "types": {
+      "observation": "Observation",
+      "nearMiss": "Near Miss",
+      "incident": "Incident",
+      "hazard": "Hazard",
+      "violation": "Violation",
+      "improvement": "Improvement"
+    }
+  },
+  "permits": {
+    "title": "Work Permits",
+    "newPermit": "New Permit",
+    "permitNumber": "Permit Number",
+    "type": "Type",
+    "issuedDate": "Issued Date",
+    "expiryDate": "Expiry Date",
+    "fireWatch": "Fire Watch",
+    "approve": "Approve",
+    "reject": "Reject",
+    "suspend": "Suspend",
+    "renew": "Renew",
+    "types": {
+      "hotWork": "Hot Work",
+      "workingAtHeight": "Working at Height",
+      "confinedSpace": "Confined Space",
+      "electrical": "Electrical",
+      "excavation": "Excavation",
+      "demolition": "Demolition",
+      "other": "Other"
+    }
+  },
+  "workers": {
+    "title": "Worker Management",
+    "newWorker": "New Worker",
+    "cin": "ID Card",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "function": "Function",
+    "department": "Department",
+    "contractType": "Contract Type",
+    "hireDate": "Hire Date",
+    "medicalFitness": "Medical Fitness",
+    "qualifications": "Qualifications",
+    "trainings": "Trainings",
+    "sanctions": "Sanctions",
+    "ppe": "Assigned PPE",
+    "contractTypes": {
+      "cdi": "Permanent",
+      "cdd": "Fixed Term",
+      "intern": "Intern",
+      "temporary": "Temporary",
+      "subcontractor": "Subcontractor"
+    }
+  }
+}

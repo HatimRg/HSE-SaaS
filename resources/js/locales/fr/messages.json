@@ -1,0 +1,42 @@
+{
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "noNotifications": "Aucune notification",
+    "new": "Nouveau"
+  },
+  "errors": {
+    "generic": "Une erreur est survenue",
+    "notFound": "Page non trouvée",
+    "unauthorized": "Non autorisé",
+    "forbidden": "Accès refusé",
+    "validation": "Veuillez vérifier les champs",
+    "network": "Erreur de connexion",
+    "sessionExpired": "Session expirée"
+  },
+  "empty": {
+    "title": "Aucune donnée",
+    "description": "Il n'y a pas encore de données à afficher",
+    "action": "Créer un nouvel élément"
+  },
+  "toasts": {
+    "saved": "Enregistré avec succès",
+    "deleted": "Supprimé avec succès",
+    "updated": "Mis à jour avec succès",
+    "created": "Créé avec succès",
+    "error": "Une erreur est survenue",
+    "uploaded": "Téléversé avec succès"
+  },
+  "cookies": {
+    "title": "Utilisation des cookies",
+    "description": "Nous utilisons des cookies pour améliorer votre expérience et suivre les actions dans l'application.",
+    "accept": "Accepter",
+    "reject": "Refuser",
+    "learnMore": "En savoir plus",
+    "types": {
+      "essential": "Essentiels - Nécessaires au fonctionnement de l'application",
+      "tracking": "Fonctionnels - Suivi des actions dans l'application",
+      "preferences": "Préférences - Langue et paramètres d'affichage"
+    }
+  }
+}

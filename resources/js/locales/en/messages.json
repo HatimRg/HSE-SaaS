@@ -1,0 +1,42 @@
+{
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "No notifications",
+    "new": "New"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "notFound": "Page not found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Access denied",
+    "validation": "Please check the fields",
+    "network": "Connection error",
+    "sessionExpired": "Session expired"
+  },
+  "empty": {
+    "title": "No Data",
+    "description": "There is no data to display yet",
+    "action": "Create a new item"
+  },
+  "toasts": {
+    "saved": "Saved successfully",
+    "deleted": "Deleted successfully",
+    "updated": "Updated successfully",
+    "created": "Created successfully",
+    "error": "An error occurred",
+    "uploaded": "Uploaded successfully"
+  },
+  "cookies": {
+    "title": "Cookie Usage",
+    "description": "We use cookies to improve your experience and track actions within the application.",
+    "accept": "Accept",
+    "reject": "Reject",
+    "learnMore": "Learn more",
+    "types": {
+      "essential": "Essential - Required for the application to function",
+      "tracking": "Functional - Track actions within the application",
+      "preferences": "Preferences - Language and display settings"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome, {{name}}",
+  "stats": {
+    "projects": "Projects",
+    "workers": "Workers",
+    "openSors": "Open Observations",
+    "activePermits": "Active Permits",
+    "inspectionsDue": "Inspections Due",
+    "trainings": "Trainings"
+  },
+  "charts": {
+    "safety": "Safety",
+    "training": "Training",
+    "compliance": "Compliance",
+    "ppe": "PPE",
+    "environmental": "Environmental"
+  }
+}

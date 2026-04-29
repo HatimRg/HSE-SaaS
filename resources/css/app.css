@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Parastoo Font - Designed by Saber Rastikerdar */
+@font-face {
+  font-family: 'Parastoo';
+  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/parastoo-font@v1.0.0-alpha3/dist/Parastoo.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/rastikerdar/parastoo-font@v1.0.0-alpha3/dist/Parastoo.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Parastoo';
+  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/parastoo-font@v1.0.0-alpha3/dist/Parastoo-Bold.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/rastikerdar/parastoo-font@v1.0.0-alpha3/dist/Parastoo-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Cinzel - Fancy font for login page */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* Light theme - High contrast ratios (all > 4.5:1 for WCAG AA) */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+    
+    /* SafeSite Color System - Maritime Blue */
+    --safesite-primary: 217 91% 60%;
+    --safesite-primary-dark: 224 76% 48%;
+    --safesite-success: 142 76% 36%;
+    --safesite-warning: 38 92% 50%;
+    --safesite-danger: 0 84% 60%;
+    
+    /* Contrast-safe backgrounds */
+    --safesite-bg-light: 210 40% 98%;
+    --safesite-text-light: 222.2 84% 4.9%;
+    --safesite-bg-card-light: 0 0% 100%;
+    --safesite-border-light: 214.3 31.8% 91.4%;
+  }
+
+  .dark {
+    /* Dark theme - High contrast ratios (all > 4.5:1 for WCAG AA) */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+    
+    /* Contrast-safe dark backgrounds */
+    --safesite-bg-dark: 222.2 84% 4.9%;
+    --safesite-text-dark: 210 40% 98%;
+    --safesite-bg-card-dark: 222.2 84% 8%;
+    --safesite-border-dark: 217.2 32.6% 17.5%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Parastoo', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Ensure high contrast text in both modes */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-foreground font-bold;
+  }
+
+  p {
+    @apply text-foreground/90;
+  }
+
+  /* Focus states for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer utilities {
+  /* Login page specific - fancy font */
+  .font-login {
+    font-family: 'Cinzel', 'Playfair Display', serif;
+  }
+
+  /* App font - Parastoo */
+  .font-app {
+    font-family: 'Parastoo', 'Inter', system-ui, sans-serif;
+  }
+
+  /* Contrast check utilities */
+  .text-contrast-high {
+    @apply text-foreground;
+  }
+
+  .text-contrast-medium {
+    @apply text-foreground/80;
+  }
+
+  .text-contrast-low {
+    @apply text-muted-foreground;
+  }
+
+  /* Glassmorphism for dark mode */
+  .glass-dark {
+    @apply bg-card/80 backdrop-blur-xl border-border;
+  }
+
+  .glass-light {
+    @apply bg-white/90 backdrop-blur-xl border-border;
+  }
+
+  /* Animation utilities */
+  .animate-float-slow {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-medium {
+    animation: float 4s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  .animate-orbit {
+    animation: orbit 20s linear infinite;
+  }
+
+  .animate-orbit-reverse {
+    animation: orbit-reverse 25s linear infinite;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(2deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    opacity: 0.4;
+    filter: blur(40px);
+  }
+  50% { 
+    opacity: 0.7;
+    filter: blur(60px);
+  }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
+}
+
+@keyframes orbit-reverse {
+  from { transform: rotate(360deg) translateX(150px) rotate(-360deg); }
+  to { transform: rotate(0deg) translateX(150px) rotate(0deg); }
+}
+
+/* Smooth transitions between themes */
+html {
+  @apply transition-colors duration-300;
+}
+
+html.dark {
+  color-scheme: dark;
+}

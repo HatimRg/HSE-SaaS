@@ -1,0 +1,19 @@
+{
+  "title": "Tableau de bord",
+  "welcome": "Bienvenue, {{name}}",
+  "stats": {
+    "projects": "Projets",
+    "workers": "Personnel",
+    "openSors": "Observations ouvertes",
+    "activePermits": "Permis actifs",
+    "inspectionsDue": "Inspections à venir",
+    "trainings": "Formations"
+  },
+  "charts": {
+    "safety": "Sécurité",
+    "training": "Formation",
+    "compliance": "Conformité",
+    "ppe": "EPI",
+    "environmental": "Environnement"
+  }
+}

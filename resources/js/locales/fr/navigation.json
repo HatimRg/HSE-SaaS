@@ -1,0 +1,16 @@
+{
+  "dashboard": "Tableau de bord",
+  "kpi": "KPI",
+  "sor": "Observations",
+  "permits": "Permis",
+  "inspections": "Inspections",
+  "workers": "Personnel",
+  "training": "Formation",
+  "ppe": "EPI",
+  "environment": "Environnement",
+  "community": "Communauté",
+  "library": "Documents",
+  "admin": "Administration",
+  "settings": "Paramètres",
+  "help": "Aide"
+}

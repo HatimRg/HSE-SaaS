@@ -1,0 +1,84 @@
+{
+  "kpi": {
+    "title": "KPI Sécurité",
+    "newReport": "Nouveau rapport",
+    "period": "Période",
+    "totalHours": "Heures totales",
+    "injuries": "Blessures",
+    "firstAids": "Premiers secours",
+    "nearMisses": "Quasi-accidents",
+    "observations": "Observations",
+    "trir": "TRIR",
+    "frequencyRate": "Taux de fréquence",
+    "severityRate": "Taux de gravité",
+    "submitForApproval": "Soumettre pour approbation",
+    "approve": "Approuver",
+    "reject": "Rejeter"
+  },
+  "sor": {
+    "title": "Observations de sécurité",
+    "newReport": "Nouvelle observation",
+    "reference": "Référence",
+    "type": "Type",
+    "severity": "Gravité",
+    "location": "Lieu",
+    "dueDate": "Date d'échéance",
+    "overdue": "En retard",
+    "photos": "Photos",
+    "correctiveAction": "Action corrective",
+    "closeReport": "Clôturer",
+    "types": {
+      "observation": "Observation",
+      "nearMiss": "Quasi-accident",
+      "incident": "Incident",
+      "hazard": "Danger",
+      "violation": "Infraction",
+      "improvement": "Amélioration"
+    }
+  },
+  "permits": {
+    "title": "Permis de travail",
+    "newPermit": "Nouveau permis",
+    "permitNumber": "Numéro de permis",
+    "type": "Type",
+    "issuedDate": "Date d'émission",
+    "expiryDate": "Date d'expiration",
+    "fireWatch": "Surveillance incendie",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "suspend": "Suspendre",
+    "renew": "Renouveler",
+    "types": {
+      "hotWork": "Travail au feu",
+      "workingAtHeight": "Travail en hauteur",
+      "confinedSpace": "Espace confiné",
+      "electrical": "Électrique",
+      "excavation": "Terrassement",
+      "demolition": "Démolition",
+      "other": "Autre"
+    }
+  },
+  "workers": {
+    "title": "Gestion du personnel",
+    "newWorker": "Nouveau personnel",
+    "cin": "CIN",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "function": "Fonction",
+    "department": "Département",
+    "contractType": "Type de contrat",
+    "hireDate": "Date d'embauche",
+    "medicalFitness": "Aptitude médicale",
+    "qualifications": "Qualifications",
+    "trainings": "Formations",
+    "sanctions": "Sanctions",
+    "ppe": "EPI assignés",
+    "contractTypes": {
+      "cdi": "CDI",
+      "cdd": "CDD",
+      "intern": "Stagiaire",
+      "temporary": "Intérimaire",
+      "subcontractor": "Sous-traitant"
+    }
+  }
+}

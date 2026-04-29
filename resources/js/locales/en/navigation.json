@@ -1,0 +1,16 @@
+{
+  "dashboard": "Dashboard",
+  "kpi": "KPI",
+  "sor": "Observations",
+  "permits": "Permits",
+  "inspections": "Inspections",
+  "workers": "Workers",
+  "training": "Training",
+  "ppe": "PPE",
+  "environment": "Environment",
+  "community": "Community",
+  "library": "Documents",
+  "admin": "Administration",
+  "settings": "Settings",
+  "help": "Help"
+}
