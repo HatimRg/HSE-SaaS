@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HSE SaaS - Gestion HSE Simplifiée</title>
+    <title>SafeSite - Gestion HSE Simplifiée</title>
     <meta name="description" content="Plateforme complète de gestion Santé, Sécurité et Environnement pour les entreprises de construction et d'industrie.">
     
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.tsx']); ?>
@@ -16,20 +16,27 @@
         
         body {
             margin: 0;
-            font-family: Inter, system-ui, -apple-system, sans-serif;
-            background: oklch(98% 0.005 60);
-            color: oklch(20% 0.015 60);
+            font-family: 'Parastoo', Inter, system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
             line-height: 1.6;
         }
         
-        /* Maritime Blue Palette */
+        /* Dark Theme Palette - Matching Login Page */
         :root {
-            --primary-500: oklch(55% 0.10 250);
-            --primary-600: oklch(48% 0.09 250);
-            --primary-700: oklch(40% 0.08 250);
-            --neutral-50: oklch(98% 0.005 60);
-            --neutral-100: oklch(95% 0.01 60);
-            --neutral-900: oklch(12% 0.01 60);
+            --primary-500: #3b82f6;
+            --primary-600: #2563eb;
+            --primary-700: #1d4ed8;
+            --neutral-50: #f8fafc;
+            --neutral-100: #f1f5f9;
+            --neutral-900: #0f172a;
+            --neutral-800: #1e293b;
+            --neutral-700: #334155;
+        }
+        
+        .dark body {
+            background: #0f172a;
+            color: #f8fafc;
         }
         
         /* Abstract geometric background pattern */
@@ -254,25 +261,42 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav style="position: fixed; top: 0; left: 0; right: 0; z-index: 40; background: oklch(98% 0.005 60 / 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid oklch(88% 0.015 60);">
+    <nav style="position: fixed; top: 0; left: 0; right: 0; z-index: 40; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(51, 65, 85, 0.5);">
         <div style="max-width: 1400px; margin: 0 auto; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;">
             <!-- Logo -->
-            <a href="/" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--neutral-900);">
+            <a href="/" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: #f8fafc;">
                 <div style="width: 40px; height: 40px; background: var(--primary-500); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                        <path d="M2 17l10 5 10-5"/>
-                        <path d="M2 12l10 5 10-5"/>
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     </svg>
                 </div>
-                <span style="font-size: 1.25rem; font-weight: 600;">HSE SaaS</span>
+                <span style="font-size: 1.25rem; font-weight: 600; font-family: 'Cinzel', serif; letter-spacing: 0.05em;">SafeSite</span>
             </a>
             
             <!-- Desktop Navigation -->
             <div style="display: none; align-items: center; gap: 2rem;" class="desktop-nav">
-                <a href="#features" class="nav-link" style="text-decoration: none; color: oklch(40% 0.02 60); font-weight: 500;">Fonctionnalités</a>
-                <a href="#testimonials" class="nav-link" style="text-decoration: none; color: oklch(40% 0.02 60); font-weight: 500;">Témoignages</a>
-                <a href="#pricing" class="nav-link" style="text-decoration: none; color: oklch(40% 0.02 60); font-weight: 500;">Tarifs</a>
+                <a href="#features" class="nav-link" style="text-decoration: none; color: #cbd5e1; font-weight: 500;">Fonctionnalités</a>
+                <a href="#testimonials" class="nav-link" style="text-decoration: none; color: #cbd5e1; font-weight: 500;">Témoignages</a>
+                <a href="#pricing" class="nav-link" style="text-decoration: none; color: #cbd5e1; font-weight: 500;">Tarifs</a>
+                
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" onclick="toggleTheme()" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; cursor: pointer; color: #f8fafc; transition: all 0.2s;" title="Toggle theme">
+                    <svg id="sun-icon" style="display: none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    </svg>
+                    <svg id="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+                
+                <!-- Language Toggle -->
+                <button id="lang-toggle" onclick="toggleLanguage()" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; cursor: pointer; color: #f8fafc; font-weight: 500; transition: all 0.2s;" title="Switch language">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                    <span id="current-lang">FR</span>
+                </button>
+                
                 <a href="<?php echo e(route('login')); ?>" class="btn-primary">Connexion</a>
             </div>
             
@@ -287,36 +311,65 @@
         </div>
         
         <!-- Mobile Menu -->
-        <div class="mobile-menu">
-            <button onclick="document.querySelector('.mobile-menu').classList.remove('active')" style="align-self: flex-end; padding: 0.5rem; background: none; border: none; cursor: pointer;">
+        <div class="mobile-menu" style="background: rgba(15, 23, 42, 0.98);">
+            <button onclick="document.querySelector('.mobile-menu').classList.remove('active')" style="align-self: flex-end; padding: 0.5rem; background: none; border: none; cursor: pointer; color: #f8fafc;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"/>
                     <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </button>
-            <a href="#features" style="text-decoration: none; color: var(--neutral-900); font-size: 1.25rem; font-weight: 500;">Fonctionnalités</a>
-            <a href="#testimonials" style="text-decoration: none; color: var(--neutral-900); font-size: 1.25rem; font-weight: 500;">Témoignages</a>
-            <a href="#pricing" style="text-decoration: none; color: var(--neutral-900); font-size: 1.25rem; font-weight: 500;">Tarifs</a>
+            <a href="#features" style="text-decoration: none; color: #f8fafc; font-size: 1.25rem; font-weight: 500;">Fonctionnalités</a>
+            <a href="#testimonials" style="text-decoration: none; color: #f8fafc; font-size: 1.25rem; font-weight: 500;">Témoignages</a>
+            <a href="#pricing" style="text-decoration: none; color: #f8fafc; font-size: 1.25rem; font-weight: 500;">Tarifs</a>
+            
+            <!-- Mobile Theme & Language Toggles -->
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button onclick="toggleTheme()" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #f8fafc; font-size: 0.875rem; cursor: pointer;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    </svg>
+                    <span>Thème</span>
+                </button>
+                <button onclick="toggleLanguage()" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #f8fafc; font-size: 0.875rem; cursor: pointer;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                    <span id="mobile-lang">FR</span>
+                </button>
+            </div>
+            
             <a href="<?php echo e(route('login')); ?>" class="btn-primary" style="margin-top: 1rem; justify-content: center;">Connexion</a>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section style="min-height: 100vh; display: flex; align-items: center; padding: 8rem 2rem 4rem; position: relative; overflow: hidden;">
-        <!-- Abstract Geometric Background -->
-        <div class="geo-pattern">
-            <div class="geo-shape geo-shape-1 animate-float"></div>
-            <div class="geo-shape geo-shape-2 animate-float-reverse"></div>
-            <div class="geo-shape geo-shape-3 animate-pulse-ring"></div>
+    <section style="min-height: 100vh; display: flex; align-items: center; padding: 8rem 2rem 4rem; position: relative; overflow: hidden; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
+        <!-- Animated Background Elements matching Login Page -->
+        <div style="position: absolute; inset: 0; overflow: hidden; pointer-events: none;">
+            <!-- Floating Orbs -->
+            <div style="position: absolute; top: 10%; left: 5%; width: 300px; height: 300px; background: rgba(59, 130, 246, 0.1); border-radius: 50%; filter: blur(60px); animation: float 8s ease-in-out infinite;"></div>
+            <div style="position: absolute; bottom: 20%; right: 10%; width: 400px; height: 400px; background: rgba(34, 197, 94, 0.1); border-radius: 50%; filter: blur(60px); animation: float 6s ease-in-out infinite reverse;"></div>
+            
+            <!-- Geometric Shapes -->
+            <div style="position: absolute; top: 20%; right: 20%; opacity: 0.1;">
+                <svg class="animate-float-slow" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1">
+                    <path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z" />
+                </svg>
+            </div>
+            <div style="position: absolute; bottom: 30%; left: 15%; opacity: 0.1;">
+                <svg class="animate-float-medium" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1">
+                    <circle cx="12" cy="12" r="10" />
+                </svg>
+            </div>
         </div>
         
         <div style="max-width: 1400px; margin: 0 auto; display: grid; gap: 4rem; align-items: center; position: relative; z-index: 1;">
             <div style="max-width: 600px;">
-                <h1 style="font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; line-height: 1.1; margin: 0 0 1.5rem; color: var(--neutral-900);">
+                <h1 style="font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; line-height: 1.1; margin: 0 0 1.5rem; color: #f8fafc; font-family: 'Cinzel', serif;">
                     La sécurité<br>mérite mieux qu'un
                     <span style="color: var(--primary-500);">tableur</span>
                 </h1>
-                <p style="font-size: 1.25rem; color: oklch(50% 0.02 60); margin-bottom: 2rem; max-width: 500px;">
+                <p style="font-size: 1.25rem; color: #94a3b8; margin-bottom: 2rem; max-width: 500px;">
                     Gérez vos permis de travail, observations de sécurité, et conformité HSE en un seul endroit. Conçu pour les responsables sécurité qui n'ont pas de temps à perdre.
                 </p>
                 <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
@@ -327,21 +380,21 @@
                             <polyline points="12 5 19 12 12 19"/>
                         </svg>
                     </a>
-                    <a href="#features" class="btn-secondary" style="font-size: 1.125rem; padding: 1rem 2rem;">
+                    <a href="#features" class="btn-secondary" style="font-size: 1.125rem; padding: 1rem 2rem; color: #f8fafc; border-color: #475569;">
                         Voir la démo
                     </a>
                 </div>
                 
                 <!-- Trust indicators -->
                 <div style="margin-top: 3rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem; color: oklch(50% 0.02 60); font-size: 0.875rem;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="oklch(65% 0.15 145)" stroke-width="2">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; color: #94a3b8; font-size: 0.875rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
                             <polyline points="20 6 9 17 4 12"/>
                         </svg>
                         <span>ISO 45001 compatible</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem; color: oklch(50% 0.02 60); font-size: 0.875rem;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="oklch(65% 0.15 145)" stroke-width="2">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; color: #94a3b8; font-size: 0.875rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
                             <polyline points="20 6 9 17 4 12"/>
                         </svg>
                         <span>Hébergement en France</span>
@@ -611,14 +664,14 @@
     </section>
 
     <!-- Testimonials -->
-    <section id="testimonials" style="padding: 6rem 2rem; background: oklch(95% 0.01 60);">
+    <section id="testimonials" style="padding: 6rem 2rem; background: #1e293b;">
         <div style="max-width: 1200px; margin: 0 auto;">
             <div style="text-align: center; max-width: 600px; margin: 0 auto 4rem;">
-                <h2 style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; margin-bottom: 1rem; color: var(--neutral-900);">
+                <h2 style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; margin-bottom: 1rem; color: #f8fafc; font-family: 'Cinzel', serif;">
                     Ils nous font confiance
                 </h2>
-                <p style="font-size: 1.25rem; color: oklch(50% 0.02 60);">
-                    Des entreprises de toutes tailles utilisent HSE SaaS au quotidien.
+                <p style="font-size: 1.25rem; color: #94a3b8;">
+                    Des entreprises de toutes tailles utilisent SafeSite au quotidien.
                 </p>
             </div>
             
@@ -628,16 +681,16 @@
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="oklch(55% 0.10 250)" style="margin-bottom: 1rem; opacity: 0.5;">
                         <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21"/>
                     </svg>
-                    <p style="font-size: 1.125rem; color: oklch(40% 0.02 60); margin-bottom: 1.5rem; font-style: italic;">
-                        "Avant HSE SaaS, nous perdions des heures chaque semaine à chercher des permis dans des classeurs. Maintenant, tout est accessible en 10 secondes depuis le chantier."
+                    <p style="font-size: 1.125rem; color: #cbd5e1; margin-bottom: 1.5rem; font-style: italic;">
+                        "Avant SafeSite, nous perdions des heures chaque semaine à chercher des permis dans des classeurs. Maintenant, tout est accessible en 10 secondes depuis le chantier."
                     </p>
                     <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div style="width: 48px; height: 48px; background: oklch(88% 0.02 60); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--neutral-900);">
+                        <div style="width: 48px; height: 48px; background: #334155; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #f8fafc;">
                             PM
                         </div>
                         <div>
-                            <div style="font-weight: 600; color: var(--neutral-900);">Philippe Martin</div>
-                            <div style="font-size: 0.875rem; color: oklch(60% 0.02 60);">Responsable HSE, BuildCorp</div>
+                            <div style="font-weight: 600; color: #f8fafc;">Philippe Martin</div>
+                            <div style="font-size: 0.875rem; color: #94a3b8;">Responsable HSE, BuildCorp</div>
                         </div>
                     </div>
                 </div>
@@ -651,12 +704,12 @@
                         "L'audit ISO 45001 est passé sans aucune non-conformité. Les inspecteurs ont été impressionnés par notre traçabilité complète des formations et des habilitations."
                     </p>
                     <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div style="width: 48px; height: 48px; background: oklch(88% 0.02 60); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--neutral-900);">
+                        <div style="width: 48px; height: 48px; background: #334155; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #f8fafc;">
                             SB
                         </div>
                         <div>
-                            <div style="font-weight: 600; color: var(--neutral-900);">Sophie Bernard</div>
-                            <div style="font-size: 0.875rem; color: oklch(60% 0.02 60);">Directrice QSE, IndustriePlus</div>
+                            <div style="font-weight: 600; color: #f8fafc;">Sophie Bernard</div>
+                            <div style="font-size: 0.875rem; color: #94a3b8;">Directrice QSE, IndustriePlus</div>
                         </div>
                     </div>
                 </div>
@@ -670,12 +723,12 @@
                         "L'application mobile nous permet de créer des observations directement depuis le terrain avec photos et localisation. Le temps de réponse est divisé par 3."
                     </p>
                     <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div style="width: 48px; height: 48px; background: oklch(88% 0.02 60); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--neutral-900);">
+                        <div style="width: 48px; height: 48px; background: #334155; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #f8fafc;">
                             AT
                         </div>
                         <div>
-                            <div style="font-weight: 600; color: var(--neutral-900);">Ahmed Touati</div>
-                            <div style="font-size: 0.875rem; color: oklch(60% 0.02 60);">Chef de chantier, TravauxPublics</div>
+                            <div style="font-weight: 600; color: #f8fafc;">Ahmed Touati</div>
+                            <div style="font-size: 0.875rem; color: #94a3b8;">Chef de chantier, TravauxPublics</div>
                         </div>
                     </div>
                 </div>
@@ -684,7 +737,7 @@
     </section>
 
     <!-- CTA Section -->
-    <section style="padding: 6rem 2rem; background: var(--primary-500); position: relative; overflow: hidden;">
+    <section style="padding: 6rem 2rem; background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%); position: relative; overflow: hidden;">
         <!-- Background pattern -->
         <div style="position: absolute; inset: 0; opacity: 0.1;">
             <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -698,10 +751,10 @@
         </div>
         
         <div style="max-width: 800px; margin: 0 auto; text-align: center; position: relative; z-index: 1;">
-            <h2 style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; margin-bottom: 1.5rem; color: white;">
+            <h2 style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; margin-bottom: 1.5rem; color: white; font-family: 'Cinzel', serif;">
                 Prêt à simplifier votre HSE ?
             </h2>
-            <p style="font-size: 1.25rem; color: oklch(90% 0.02 250); margin-bottom: 2rem;">
+            <p style="font-size: 1.25rem; color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem;">
                 Rejoignez des centaines d'entreprises qui ont fait le choix de la sécurité digitale. Essai gratuit de 14 jours, sans engagement.
             </p>
             <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;">
@@ -713,14 +766,14 @@
                     </svg>
                 </a>
             </div>
-            <p style="font-size: 0.875rem; color: oklch(80% 0.03 250); margin-top: 1.5rem;">
+            <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.7); margin-top: 1.5rem;">
                 Déjà client ? <a href="<?php echo e(route('login')); ?>" style="color: white; text-decoration: underline;">Connectez-vous</a>
             </p>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer style="padding: 4rem 2rem 2rem; background: var(--neutral-900); color: oklch(70% 0.02 60);">
+    <footer style="padding: 4rem 2rem 2rem; background: #0f172a; color: #94a3b8;">
         <div style="max-width: 1200px; margin: 0 auto;">
             <div style="display: grid; gap: 3rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 3rem;">
                 <!-- Brand -->
@@ -733,7 +786,7 @@
                                 <path d="M2 12l10 5 10-5"/>
                             </svg>
                         </div>
-                        <span style="font-size: 1.25rem; font-weight: 600; color: white;">HSE SaaS</span>
+                        <span style="font-size: 1.25rem; font-weight: 600; color: white; font-family: 'Cinzel', serif; letter-spacing: 0.05em;">SafeSite</span>
                     </div>
                     <p style="font-size: 0.875rem; margin-bottom: 1rem;">
                         La plateforme de gestion HSE conçue pour les professionnels de la sécurité.
@@ -788,8 +841,8 @@
                 </div>
             </div>
             
-            <div style="padding-top: 2rem; border-top: 1px solid oklch(30% 0.02 60); text-align: center; font-size: 0.875rem;">
-                <p>&copy; 2026 HSE SaaS. Tous droits réservés. Hébergé en France.</p>
+            <div style="padding-top: 2rem; border-top: 1px solid #334155; text-align: center; font-size: 0.875rem;">
+                <p>&copy; 2026 SafeSite. Tous droits réservés. Hébergé en France.</p>
             </div>
         </div>
     </footer>
@@ -837,6 +890,66 @@
         document.querySelectorAll('.reveal').forEach(function(el) {
             observer.observe(el);
         });
+        
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+            
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        // Initialize theme from localStorage
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const html = document.documentElement;
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+            
+            if (savedTheme === 'light') {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            }
+        })();
+        
+        // Language Toggle
+        function toggleLanguage() {
+            const currentLang = document.getElementById('current-lang');
+            const newLang = currentLang.textContent === 'FR' ? 'EN' : 'FR';
+            currentLang.textContent = newLang;
+            localStorage.setItem('lang', newLang.toLowerCase());
+            
+            // Simple page reload to apply language (in real app, this would use i18n)
+            if (newLang === 'EN') {
+                // For demo purposes - show alert
+                alert('Language switched to English (EN)');
+            } else {
+                alert('Langue changée en Français (FR)');
+            }
+        }
+        
+        // Initialize language from localStorage
+        (function() {
+            const savedLang = localStorage.getItem('lang');
+            if (savedLang) {
+                document.getElementById('current-lang').textContent = savedLang.toUpperCase();
+            }
+        })();
     </script>
 </body>
 </html>

@@ -1,8 +1,9 @@
 {
-  "appName": "HSE SaaS",
+  "appName": "SafeSite",
   "loading": "Chargement...",
   "saving": "Enregistrement...",
   "error": "Erreur",
+  "saved": "Enregistré avec succès",
   "success": "Succès",
   "cancel": "Annuler",
   "confirm": "Confirmer",
@@ -30,7 +31,6 @@
   "settings": "Paramètres",
   "profile": "Profil",
   "logout": "Déconnexion",
-  "login": "Connexion",
   "register": "S'inscrire",
   "forgotPassword": "Mot de passe oublié ?",
   "resetPassword": "Réinitialiser le mot de passe",
@@ -78,5 +78,21 @@
   "critical": "Critique",
   "urgent": "Urgent",
   "warning": "Attention",
-  "info": "Info"
+  "info": "Info",
+  "login": {
+    "title": "Connexion",
+    "subtitle": "Accédez à votre tableau de bord HSE",
+    "email": "Email",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "signIn": "Se connecter",
+    "signingIn": "Connexion en cours...",
+    "rememberMe": "Se souvenir de moi",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas de compte ?",
+    "signUp": "S'inscrire",
+    "invalidCredentials": "Identifiants invalides",
+    "success": "Connexion réussie",
+    "demoCredentials": "Identifiants de démonstration"
+  }
 }

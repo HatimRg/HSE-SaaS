@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,7 +10,6 @@ import {
   User,
   LogOut,
   Settings,
-  Bug,
   Languages,
   Check,
   X,
@@ -22,11 +21,24 @@ export function TopBar() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { isDark, toggle } = useTheme();
-  const { user, logout, notifications } = useAuth();
+  const { user, logout } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showLanguage, setShowLanguage] = useState(false);
-  const [showBugReport, setShowBugReport] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+        setShowProfile(false);
+        setShowLanguage(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang);
@@ -38,7 +50,7 @@ export function TopBar() {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border bg-card px-4 lg:px-6">
+    <header className="flex h-14 items-center justify-between border-b border-border bg-card px-5">
       {/* Search */}
       <div className="flex items-center gap-4 flex-1">
         <div className="relative max-w-md flex-1 hidden md:block">
@@ -52,7 +64,7 @@ export function TopBar() {
       </div>
 
       {/* Right side actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" ref={dropdownRef}>
         {/* Language Switcher */}
         <div className="relative">
           <button
@@ -122,15 +134,6 @@ export function TopBar() {
           </AnimatePresence>
         </button>
 
-        {/* Bug Report */}
-        <button
-          onClick={() => setShowBugReport(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-lg hover:bg-muted transition-colors"
-          title="Report a bug"
-        >
-          <Bug className="h-5 w-5" />
-        </button>
-
         {/* Notifications */}
         <div className="relative">
           <button
@@ -138,11 +141,6 @@ export function TopBar() {
             className="relative flex h-10 w-10 items-center justify-center rounded-lg hover:bg-muted transition-colors"
           >
             <Bell className="h-5 w-5" />
-            {notifications && notifications.length > 0 && (
-              <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
-                {notifications.length}
-              </span>
-            )}
           </button>
 
           <AnimatePresence>
@@ -163,23 +161,9 @@ export function TopBar() {
                   </button>
                 </div>
                 <div className="max-h-64 overflow-y-auto p-2">
-                  {notifications && notifications.length > 0 ? (
-                    notifications.map((notification: any) => (
-                      <div
-                        key={notification.id}
-                        className="flex items-start gap-3 rounded-lg p-2 hover:bg-muted cursor-pointer"
-                      >
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{notification.title}</p>
-                          <p className="text-xs text-muted-foreground">{notification.message}</p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="p-4 text-center text-sm text-muted-foreground">
-                      {t('notifications.noNotifications')}
-                    </p>
-                  )}
+                  <p className="p-4 text-center text-sm text-muted-foreground">
+                    {t('notifications.noNotifications')}
+                  </p>
                 </div>
               </motion.div>
             )}

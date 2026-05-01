@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,7 +16,6 @@ import {
   FolderOpen,
   Settings,
   ChevronLeft,
-  ChevronRight,
   ChevronDown,
   Shield,
   Menu,
@@ -29,7 +28,7 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   children?: NavItem[];
-  permission?: keyof ReturnType<typeof useAuth>['user']['permissions'];
+  permission?: string;
 }
 
 const navItems: NavItem[] = [
@@ -48,7 +47,7 @@ const navItems: NavItem[] = [
 
 export function Sidebar() {
   const { t } = useTranslation();
-  const { user, hasPermission } = useAuth();
+  const { hasPermission } = useAuth();
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -89,8 +88,8 @@ export function Sidebar() {
   // Desktop Sidebar
   const DesktopSidebar = () => (
     <motion.aside
-      initial={{ width: 280 }}
-      animate={{ width: isCollapsed ? 72 : 280 }}
+      initial={{ width: 260 }}
+      animate={{ width: isCollapsed ? 68 : 260 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       className="hidden lg:flex flex-col border-r border-border bg-card h-screen sticky top-0"
     >
@@ -117,7 +116,7 @@ export function Sidebar() {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="lg:hidden fixed top-0 left-0 z-50 h-full w-[280px] flex flex-col border-r border-border bg-card shadow-2xl"
+            className="lg:hidden fixed top-0 left-0 z-50 h-full w-[260px] flex flex-col border-r border-border bg-card shadow-2xl"
           >
             {/* Close button */}
             <div className="absolute top-4 right-4">
@@ -146,16 +145,12 @@ export function Sidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2.5"
             >
-              <motion.div 
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Shield className="h-5 w-5" />
-              </motion.div>
-              <span className="font-semibold text-lg">{t('common.appName')}</span>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <Shield className="h-4 w-4" />
+              </div>
+              <span className="font-bold text-base tracking-tight">{t('common.appName')}</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -184,16 +179,16 @@ export function Sidebar() {
             const hasChildren = item.children && item.children.length > 0;
             const isExpanded = expandedItems.includes(item.path);
 
-            if (item.permission && !hasPermission(item.permission)) {
+            if (item.permission && !hasPermission(item.permission as any)) {
               return null;
             }
 
             return (
               <motion.li 
                 key={item.path}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: index * 0.03 }}
               >
                 {hasChildren ? (
                   <div>
@@ -232,7 +227,7 @@ export function Sidebar() {
                           transition={{ duration: 0.2 }}
                           className="ml-4 mt-1 space-y-1 overflow-hidden"
                         >
-                          {item.children.map((child, childIndex) => (
+                          {item.children?.map((child, childIndex) => (
                             <motion.li 
                               key={child.path}
                               initial={{ opacity: 0, x: -10 }}
@@ -266,34 +261,20 @@ export function Sidebar() {
                     className={({ isActive }) =>
                       `group flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
                         isActive
-                          ? 'bg-primary/10 text-primary'
+                          ? 'bg-primary/8 text-primary font-medium'
                           : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                       }`
                     }
                     title={isCollapsed && !isMobile ? t(item.label) : undefined}
                   >
-                    <motion.div 
-                      whileHover={{ scale: 1.1, rotate: 5 }} 
-                      whileTap={{ scale: 0.9 }}
-                      className="relative"
-                    >
+                    <div className="relative">
                       <Icon className="h-5 w-5 flex-shrink-0" />
-                      {active && isCollapsed && !isMobile && (
-                        <motion.span
-                          layoutId="miniIndicator"
-                          className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-primary"
-                        />
-                      )}
-                    </motion.div>
+                    </div>
                     {(!isCollapsed || isMobile) && (
-                      <span className="text-sm font-medium">{t(item.label)}</span>
+                      <span className="text-sm">{t(item.label)}</span>
                     )}
                     {active && (!isCollapsed || isMobile) && (
-                      <motion.div
-                        layoutId={isMobile ? "mobileActiveIndicator" : "activeIndicator"}
-                        className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      />
+                      <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
                     )}
                   </NavLink>
                 )}
@@ -304,24 +285,22 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom section */}
-      <div className="border-t border-border p-4">
+      <div className="border-t border-border p-3">
         <NavLink
           to="/settings"
           onClick={() => isMobile && setIsMobileOpen(false)}
           className={({ isActive }) =>
             `group flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
               isActive
-                ? 'bg-primary/10 text-primary'
+                ? 'bg-primary/8 text-primary font-medium'
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             }`
           }
           title={isCollapsed && !isMobile ? t('navigation.settings') : undefined}
         >
-          <motion.div whileHover={{ scale: 1.1, rotate: 30 }} whileTap={{ scale: 0.9 }}>
-            <Settings className="h-5 w-5" />
-          </motion.div>
+          <Settings className="h-5 w-5" />
           {(!isCollapsed || isMobile) && (
-            <span className="text-sm font-medium">{t('navigation.settings')}</span>
+            <span className="text-sm">{t('navigation.settings')}</span>
           )}
         </NavLink>
       </div>

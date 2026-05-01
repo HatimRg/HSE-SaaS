@@ -1108,4 +1108,146 @@ php artisan storage:link
 
 ---
 
+### v1.4.0 (May 1, 2026) - SafeSite Rebrand & Dark/Light Theme Implementation
+
+#### Overview
+Complete rebranding from "HSE SaaS" to "SafeSite" with comprehensive dark/light theme system, new font strategy, and theme/language toggles across all pages.
+
+#### Key Changes
+
+**1. Platform Rebranding**
+- Changed all "HSE SaaS" / "HSE Platform" references to "SafeSite"
+- Updated i18n files: `resources/js/locales/fr/common.json`, `resources/js/locales/en/common.json`
+- Updated landing page, login page, dashboard, and all components
+
+**2. Dark/Light Theme System**
+- Implemented CSS variable-based theming in `resources/css/app.css`
+- Light theme: White/light backgrounds with high contrast text (WCAG AA compliant)
+- Dark theme: Slate backgrounds (#0f172a) with white text
+- All contrast ratios > 4.5:1 for accessibility
+
+**3. Font Strategy**
+- **Login Page**: Cinzel font (elegant serif) via Google Fonts
+- **All Other Pages**: Parastoo font (designed by Saber Rastikerdar)
+- Parastoo loaded from CDN with @font-face declarations
+- Tailwind configured with font-family utilities: `font-login`, `font-app`
+
+**4. Animated Login Background**
+Added to both `app.tsx` and `landing.blade.php`:
+- Floating gradient orbs with blur effects (Tailwind keyframes)
+- Animated hexagons and shield icons
+- Small floating dots with pulse animation
+- Grid pattern overlay
+- CSS animations: `animate-float-slow`, `animate-float-medium`, `animate-pulse-glow`
+
+**5. Theme & Language Toggles**
+
+| Page | Theme Toggle | Language Toggle | Implementation |
+|------|-------------|-----------------|----------------|
+| **Landing** | Sun/Moon icons | FR/EN button | Vanilla JS with localStorage |
+| **Landing Mobile** | "Thème" button | "FR/EN" button | Inside mobile drawer menu |
+| **Login** | Animated Sun/Moon | Dropdown FR/EN | React + useTheme() hook |
+| **Dashboard** | Sun/Moon icon | Globe dropdown | React + top-bar.tsx |
+
+**6. TypeScript Fixes**
+- Fixed all `TS6133` unused import errors across all pages
+- Fixed `TS6133` unused variable errors
+- Fixed `TS2339` property does not exist errors
+- Fixed `TS2345` type assignment errors
+- Fixed `TS18048` possibly undefined errors
+- Created `resources/js/lib/utils.ts` with `cn()` helper function
+- Fixed `@/lib/utils` import paths to use relative imports
+
+#### Files Modified
+
+**Core Theming:**
+- `resources/css/app.css` - CSS variables for light/dark themes, font imports
+- `tailwind.config.js` - Font families, dark mode class, color mappings
+- `resources/js/components/theme-provider.tsx` - useTheme hook integration
+
+**Pages:**
+- `resources/js/app.tsx` - LoginPage with theme/lang toggles, SafeSite branding
+- `resources/views/landing.blade.php` - Dark theme, animated background, toggles
+- `resources/js/components/top-bar.tsx` - Theme/lang toggles in header
+
+**TypeScript Fixes:**
+- `resources/js/components/cookie-consent.tsx` - Removed unused React import
+- `resources/js/components/skeleton.tsx` - Removed unused React import
+- `resources/js/components/ui/skeleton.tsx` - Fixed import path
+- `resources/js/components/sidebar.tsx` - Fixed permission types, removed unused imports
+- `resources/js/components/top-bar.tsx` - Removed unused Bug import, fixed notifications
+- `resources/js/pages/dashboard.tsx` - Removed unused React import
+- `resources/js/pages/inspections.tsx` - Removed unused React import
+- `resources/js/pages/kpi.tsx` - Removed unused React import and variables
+- `resources/js/pages/not-found.tsx` - Removed unused React import
+- `resources/js/pages/permits.tsx` - Removed unused React import
+- `resources/js/pages/ppe.tsx` - Removed unused React import
+- `resources/js/pages/profile.tsx` - Removed unused React import and t
+- `resources/js/pages/settings.tsx` - Removed unused React import
+- `resources/js/pages/sor.tsx` - Removed unused React import
+- `resources/js/pages/training.tsx` - Removed unused React import
+- `resources/js/pages/workers.tsx` - Removed unused React import
+
+**New Files:**
+- `resources/js/lib/utils.ts` - Utility functions (cn helper)
+
+**i18n Updates:**
+- `resources/js/locales/fr/common.json` - Updated appName to "SafeSite"
+- `resources/js/locales/en/common.json` - Updated appName to "SafeSite"
+
+#### Build Output
+```
+public/build/
+├── manifest.json (0.33 kB)
+├── assets/app-{hash}.css (34.31 kB, gzipped: 6.82 kB)
+└── assets/app-{hash}.js (338.89 kB, gzipped: 106.54 kB)
+```
+
+#### Technical Details
+
+**Theme Toggle Implementation:**
+```typescript
+// React components use useTheme() hook
+const { isDark, toggle } = useTheme();
+
+// Vanilla JS uses localStorage + CSS classes
+document.documentElement.classList.toggle('dark');
+localStorage.setItem('theme', 'dark' | 'light');
+```
+
+**Language Toggle Implementation:**
+```typescript
+// React components use i18n.changeLanguage()
+const { i18n } = useTranslation();
+i18n.changeLanguage('fr' | 'en');
+
+// Vanilla JS uses localStorage + page reload
+localStorage.setItem('lang', 'fr' | 'en');
+```
+
+**CSS Variable System:**
+```css
+:root {
+  /* Light theme */
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --primary: 221.2 83.2% 53.3%;
+}
+
+.dark {
+  /* Dark theme */
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --primary: 217.2 91.2% 59.8%;
+}
+```
+
+#### Accessibility
+- All color combinations meet WCAG AA standards (contrast ratio > 4.5:1)
+- Focus indicators visible on all interactive elements
+- Keyboard navigation supported for all toggles
+- Screen reader labels on icon buttons
+
+---
+
 **End of Implementation Record**

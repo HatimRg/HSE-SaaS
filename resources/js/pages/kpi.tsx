@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -9,7 +8,6 @@ import { SkeletonTable } from '../components/skeleton';
 
 export default function KpiPage() {
   const { t } = useTranslation();
-  const [filter, setFilter] = useState('');
 
   const { data: reports, isLoading } = useQuery({
     queryKey: ['kpi-reports'],
@@ -24,19 +22,19 @@ export default function KpiPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{t('kpi.title')}</h1>
-          <p className="text-muted-foreground">Manage safety KPI reports</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('kpi.title')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage safety KPI reports</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm hover:bg-muted">
+          <button className="flex items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm hover:bg-muted transition-colors">
             <Filter className="h-4 w-4" />
             {t('common.filter')}
           </button>
-          <button className="flex items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm hover:bg-muted">
+          <button className="flex items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm hover:bg-muted transition-colors">
             <Download className="h-4 w-4" />
             {t('common.export')}
           </button>
-          <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-dark">
+          <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
             <Plus className="h-4 w-4" />
             {t('kpi.newReport')}
           </button>

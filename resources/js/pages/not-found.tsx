@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -21,7 +20,7 @@ export default function NotFoundPage() {
         <p className="mt-2 text-lg text-muted-foreground">{t('errors.notFound')}</p>
         <Link
           to="/dashboard"
-          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-primary-foreground hover:bg-primary-dark"
+          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-primary-foreground hover:opacity-90 transition-opacity"
         >
           <Home className="h-4 w-4" />
           {t('navigation.dashboard')}

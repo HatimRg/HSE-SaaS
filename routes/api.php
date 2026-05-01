@@ -8,15 +8,19 @@ use App\Http\Controllers\Api\WorkPermitController;
 use App\Http\Controllers\Api\InspectionController;
 use App\Http\Controllers\Api\WorkerController;
 use App\Http\Controllers\Api\ProjectController;
-use App\Http\Controllers\Api\TrainingSessionController;
-use App\Http\Controllers\Api\MachineController;
+use App\Http\Controllers\Api\TrainingController;
 use App\Http\Controllers\Api\PpeController;
-use App\Http\Controllers\Api\DailyHeadcountController;
 use App\Http\Controllers\Api\LibraryController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\CommunityController;
+use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\SuperAdminController;
+use App\Http\Controllers\Api\CompanyBrandingController;
+use App\Http\Controllers\Api\OshaComplianceController;
+use App\Http\Controllers\Api\RiskAssessmentController;
+use App\Http\Controllers\Api\IncidentInvestigationController;
+use App\Http\Controllers\Api\ImportExportController;
 use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\ExportController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -37,6 +41,15 @@ Route::middleware(['auth:sanctum', 'tenant', 'security.headers'])->group(functio
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('throttle:dashboard');
     Route::get('/dashboard/stats', [DashboardController::class, 'stats'])->middleware('throttle:dashboard');
     Route::get('/dashboard/charts', [DashboardController::class, 'charts'])->middleware('throttle:dashboard');
+    
+    // Analytics
+    Route::get('/analytics/overview', [AnalyticsController::class, 'overview']);
+    Route::get('/analytics/kpis', [AnalyticsController::class, 'kpis']);
+    Route::get('/analytics/trends', [AnalyticsController::class, 'trends']);
+    Route::get('/analytics/predictive', [AnalyticsController::class, 'predictive']);
+    Route::get('/analytics/cost-analysis', [AnalyticsController::class, 'costAnalysis']);
+    Route::get('/analytics/risk-matrix', [AnalyticsController::class, 'riskMatrix']);
+    Route::get('/analytics/compliance', [AnalyticsController::class, 'compliance']);
     
     // KPI Reports
     Route::get('/kpi-reports', [KpiReportController::class, 'index']);
@@ -102,22 +115,16 @@ Route::middleware(['auth:sanctum', 'tenant', 'security.headers'])->group(functio
     Route::delete('/projects/{id}/team/{userId}', [ProjectController::class, 'removeTeamMember']);
     Route::get('/projects/{id}/stats', [ProjectController::class, 'stats']);
     
-    // Training Sessions
-    Route::get('/training-sessions', [TrainingSessionController::class, 'index']);
-    Route::post('/training-sessions', [TrainingSessionController::class, 'store']);
-    Route::get('/training-sessions/{id}', [TrainingSessionController::class, 'show']);
-    Route::put('/training-sessions/{id}', [TrainingSessionController::class, 'update']);
-    Route::delete('/training-sessions/{id}', [TrainingSessionController::class, 'destroy']);
-    Route::post('/training-sessions/{id}/attendance', [TrainingSessionController::class, 'recordAttendance']);
-    Route::get('/training-sessions/{id}/attendees', [TrainingSessionController::class, 'attendees']);
-    
-    // Machines
-    Route::get('/machines', [MachineController::class, 'index']);
-    Route::post('/machines', [MachineController::class, 'store']);
-    Route::get('/machines/{id}', [MachineController::class, 'show']);
-    Route::put('/machines/{id}', [MachineController::class, 'update']);
-    Route::delete('/machines/{id}', [MachineController::class, 'destroy']);
-    Route::post('/machines/{id}/inspection', [MachineController::class, 'recordInspection']);
+    // Training Sessions (using TrainingController)
+    Route::get('/training-sessions', [TrainingController::class, 'index']);
+    Route::post('/training-sessions', [TrainingController::class, 'store']);
+    Route::get('/training-sessions/{id}', [TrainingController::class, 'show']);
+    Route::put('/training-sessions/{id}', [TrainingController::class, 'update']);
+    Route::delete('/training-sessions/{id}', [TrainingController::class, 'destroy']);
+    Route::post('/training-sessions/{id}/attendance', [TrainingController::class, 'markAttendance']);
+    Route::get('/training-sessions/{id}/attendees', [TrainingController::class, 'addParticipants']);
+    Route::get('/training-sessions/statistics', [TrainingController::class, 'statistics']);
+    Route::post('/training-sessions/{id}/certificates', [TrainingController::class, 'generateCertificates']);
     
     // PPE
     Route::get('/ppe/items', [PpeController::class, 'items']);
@@ -127,13 +134,6 @@ Route::middleware(['auth:sanctum', 'tenant', 'security.headers'])->group(functio
     Route::post('/ppe/assign', [PpeController::class, 'assignPpe']);
     Route::get('/ppe/assignments', [PpeController::class, 'assignments']);
     Route::get('/ppe/low-stock', [PpeController::class, 'lowStock']);
-    
-    // Daily Headcount
-    Route::get('/daily-headcounts', [DailyHeadcountController::class, 'index']);
-    Route::post('/daily-headcounts', [DailyHeadcountController::class, 'store']);
-    Route::get('/daily-headcounts/summary', [DailyHeadcountController::class, 'summary']);
-    Route::get('/daily-headcounts/{id}', [DailyHeadcountController::class, 'show']);
-    Route::put('/daily-headcounts/{id}', [DailyHeadcountController::class, 'update']);
     
     // Library
     Route::get('/library/folders', [LibraryController::class, 'folders']);
@@ -159,19 +159,66 @@ Route::middleware(['auth:sanctum', 'tenant', 'security.headers'])->group(functio
     Route::post('/community/posts/{id}/comment', [CommunityController::class, 'addComment']);
     Route::get('/community/posts/{id}/comments', [CommunityController::class, 'comments']);
     
-    // Users (Admin only)
-    Route::get('/users', [UserController::class, 'index']);
-    Route::post('/users', [UserController::class, 'store']);
-    Route::get('/users/{id}', [UserController::class, 'show']);
-    Route::put('/users/{id}', [UserController::class, 'update']);
-    Route::delete('/users/{id}', [UserController::class, 'destroy']);
-    Route::post('/users/{id}/activate', [UserController::class, 'activate']);
-    Route::post('/users/{id}/deactivate', [UserController::class, 'deactivate']);
+    // Risk Assessment
+    Route::get('/risk-assessments', [RiskAssessmentController::class, 'index']);
+    Route::post('/risk-assessments', [RiskAssessmentController::class, 'store']);
+    Route::get('/risk-assessments/{id}', [RiskAssessmentController::class, 'show']);
+    Route::put('/risk-assessments/{id}', [RiskAssessmentController::class, 'update']);
+    Route::delete('/risk-assessments/{id}', [RiskAssessmentController::class, 'destroy']);
+    Route::get('/risk-assessments/matrix', [RiskAssessmentController::class, 'matrix']);
     
-    // Exports
-    Route::get('/export/kpi-reports', [ExportController::class, 'exportKpiReports'])->middleware('throttle:export');
-    Route::get('/export/workers', [ExportController::class, 'exportWorkers'])->middleware('throttle:export');
-    Route::get('/export/sor-reports', [ExportController::class, 'exportSorReports'])->middleware('throttle:export');
+    // Incident Investigation
+    Route::get('/incidents', [IncidentInvestigationController::class, 'index']);
+    Route::post('/incidents', [IncidentInvestigationController::class, 'store']);
+    Route::get('/incidents/{id}', [IncidentInvestigationController::class, 'show']);
+    Route::put('/incidents/{id}', [IncidentInvestigationController::class, 'update']);
+    Route::delete('/incidents/{id}', [IncidentInvestigationController::class, 'destroy']);
+    Route::post('/incidents/{id}/investigate', [IncidentInvestigationController::class, 'investigate']);
+    Route::post('/incidents/{id}/close', [IncidentInvestigationController::class, 'closeIncident']);
+    
+    // OSHA Compliance
+    Route::get('/osha/compliance', [OshaComplianceController::class, 'compliance']);
+    Route::get('/osha/recordables', [OshaComplianceController::class, 'recordables']);
+    Route::get('/osha/trir', [OshaComplianceController::class, 'trir']);
+    Route::get('/osha/dart', [OshaComplianceController::class, 'dart']);
+    Route::get('/osha/ltifr', [OshaComplianceController::class, 'ltifr']);
+    Route::get('/osha/300-log', [OshaComplianceController::class, 'log300']);
+    
+    // Company Branding
+    Route::get('/company/branding', [CompanyBrandingController::class, 'show']);
+    Route::put('/company/branding', [CompanyBrandingController::class, 'update']);
+    Route::post('/company/logo', [CompanyBrandingController::class, 'uploadLogo']);
+    Route::delete('/company/logo', [CompanyBrandingController::class, 'removeLogo']);
+    
+    // Super Admin (requires super_admin role)
+    Route::middleware('role:super_admin')->prefix('super-admin')->group(function () {
+        Route::get('/companies', [SuperAdminController::class, 'companies']);
+        Route::post('/companies', [SuperAdminController::class, 'createCompany']);
+        Route::put('/companies/{id}', [SuperAdminController::class, 'updateCompany']);
+        Route::post('/companies/{id}/suspend', [SuperAdminController::class, 'suspendCompany']);
+        Route::post('/companies/{id}/activate', [SuperAdminController::class, 'activateCompany']);
+        Route::get('/stats', [SuperAdminController::class, 'stats']);
+        Route::get('/audit-logs', [SuperAdminController::class, 'auditLogs']);
+    });
+    
+    // Users (Admin only)
+    Route::middleware('role:admin|super_admin')->group(function () {
+        Route::get('/users', [UserController::class, 'index']);
+        Route::post('/users', [UserController::class, 'store']);
+        Route::get('/users/{id}', [UserController::class, 'show']);
+        Route::put('/users/{id}', [UserController::class, 'update']);
+        Route::delete('/users/{id}', [UserController::class, 'destroy']);
+        Route::post('/users/{id}/activate', [UserController::class, 'activate']);
+        Route::post('/users/{id}/deactivate', [UserController::class, 'deactivate']);
+    });
+    
+    // Import/Export
+    Route::post('/import/workers', [ImportExportController::class, 'importWorkers'])->middleware('throttle:import');
+    Route::get('/export/kpi-reports', [ImportExportController::class, 'exportKpiReports'])->middleware('throttle:export');
+    Route::get('/export/workers', [ImportExportController::class, 'exportWorkers'])->middleware('throttle:export');
+    Route::get('/export/sor-reports', [ImportExportController::class, 'exportSorReports'])->middleware('throttle:export');
+    Route::get('/export/inspections', [ImportExportController::class, 'exportInspections'])->middleware('throttle:export');
+    Route::get('/export/work-permits', [ImportExportController::class, 'exportWorkPermits'])->middleware('throttle:export');
     
     // Health check
     Route::get('/health', function () {

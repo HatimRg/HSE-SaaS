@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       api.defaults.headers.Authorization = `Bearer ${data.token}`;
       queryClient.setQueryData(['user'], data.user);
       
-      toast.success(t('common.success'));
+      toast.success(t('common:success'));
       
       if (data.must_change_password) {
         navigate('/change-password');
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || t('errors.unauthorized'));
+      toast.error(error.response?.data?.message || t('messages:errors.unauthorized'));
     },
   });
 
@@ -125,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       delete api.defaults.headers.Authorization;
       queryClient.clear();
       navigate('/login');
-      toast.success(t('common.logout'));
+      toast.success(t('common:logout'));
     },
   });
 
@@ -137,10 +137,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['user'], data);
-      toast.success(t('toasts.saved'));
+      toast.success(t('common:saved'));
     },
     onError: () => {
-      toast.error(t('toasts.error'));
+      toast.error(t('common:error'));
     },
   });
 
@@ -154,11 +154,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     },
     onSuccess: () => {
-      toast.success(t('toasts.saved'));
+      toast.success(t('common:saved'));
       navigate('/dashboard');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || t('toasts.error'));
+      toast.error(error.response?.data?.message || t('common:error'));
     },
   });
 

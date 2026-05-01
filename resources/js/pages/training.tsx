@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -25,7 +24,7 @@ export default function TrainingPage() {
           <h1 className="text-2xl font-bold">{t('navigation.training')}</h1>
           <p className="text-muted-foreground">Training sessions and certifications</p>
         </div>
-        <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-dark">
+        <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
           <Plus className="h-4 w-4" />
           New Session
         </button>

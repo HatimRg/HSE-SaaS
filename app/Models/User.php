@@ -81,6 +81,8 @@ class User extends Authenticatable
     {
         parent::boot();
 
+        // Note: Tenant scoping is handled by TenantMiddleware.
+        // User model needs its own scope since it doesn't extend BaseModel.
         static::addGlobalScope('tenant', function ($builder) {
             if (auth()->check() && !auth()->user()->isSuperAdmin()) {
                 $builder->where('users.company_id', auth()->user()->company_id);

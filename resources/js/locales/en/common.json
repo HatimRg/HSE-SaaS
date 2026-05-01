@@ -1,8 +1,9 @@
 {
-  "appName": "HSE SaaS",
+  "appName": "SafeSite",
   "loading": "Loading...",
   "saving": "Saving...",
   "error": "Error",
+  "saved": "Saved successfully",
   "success": "Success",
   "cancel": "Cancel",
   "confirm": "Confirm",
@@ -30,7 +31,6 @@
   "settings": "Settings",
   "profile": "Profile",
   "logout": "Logout",
-  "login": "Login",
   "register": "Register",
   "forgotPassword": "Forgot password?",
   "resetPassword": "Reset password",
@@ -78,5 +78,21 @@
   "critical": "Critical",
   "urgent": "Urgent",
   "warning": "Warning",
-  "info": "Info"
+  "info": "Info",
+  "login": {
+    "title": "Login",
+    "subtitle": "Access your HSE dashboard",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "No account?",
+    "signUp": "Sign up",
+    "invalidCredentials": "Invalid credentials",
+    "success": "Login successful",
+    "demoCredentials": "Demo credentials"
+  }
 }

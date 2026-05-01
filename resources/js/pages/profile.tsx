@@ -1,11 +1,8 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Mail, Phone, Building, Shield, FolderKanban } from 'lucide-react';
 import { useAuth } from '../components/auth-provider';
 
 export default function ProfilePage() {
-  const { t } = useTranslation();
   const { user } = useAuth();
 
   return (

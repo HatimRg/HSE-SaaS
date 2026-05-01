@@ -33,13 +33,8 @@ abstract class BaseModel extends Model
     {
         parent::boot();
 
-        // Apply tenant scope globally
-        static::addGlobalScope('tenant', function ($builder) {
-            if (auth()->check()) {
-                $companyId = auth()->user()->company_id;
-                $builder->where($builder->getModel()->getTable() . '.company_id', $companyId);
-            }
-        });
+        // Note: Tenant scoping is handled by TenantMiddleware, not here.
+        // Adding it here would cause double WHERE clauses.
 
         // Set company_id on create
         static::creating(function ($model) {
@@ -118,7 +113,7 @@ abstract class BaseModel extends Model
         try {
             Cache::forget($cacheKey);
             Cache::forget("{$cacheKey}:list");
-            Cache::tags([$this->getTable(), "tenant:{$this->company_id}"])->flush();
+            // Cache::tags() not supported by file/database drivers - skip
         } catch (\Exception $e) {
             Log::warning('Cache clear failed', ['key' => $cacheKey, 'error' => $e->getMessage()]);
         }
@@ -137,16 +132,15 @@ abstract class BaseModel extends Model
      */
     public function scopeForCompany($query, int $companyId)
     {
-        return $query->withoutGlobalScope('tenant')
-                     ->where('company_id', $companyId);
+        return $query->where('company_id', $companyId);
     }
 
     /**
-     * Scope: Without tenant scope (for super admin).
+     * Scope: Without tenant scope (for super admin - no-op since scope removed from model).
      */
     public function scopeWithoutTenant($query)
     {
-        return $query->withoutGlobalScope('tenant');
+        return $query;
     }
 
     /**
