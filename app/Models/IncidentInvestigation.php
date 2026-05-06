@@ -50,7 +50,7 @@ class IncidentInvestigation extends Model
 
     public function incident()
     {
-        return $this->belongsTo(SorReport::class, 'incident_id');
+        return $this->belongsTo(HseEvent::class, 'incident_id');
     }
 
     public function project()

@@ -493,6 +493,7 @@ function CreateInvestigationModal({ onClose, onSuccess }: {
   onClose: () => void;
   onSuccess: () => void;
 }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     incident_id: '',
     investigator_id: '',
@@ -513,35 +514,35 @@ function CreateInvestigationModal({ onClose, onSuccess }: {
         animate={{ opacity: 1, scale: 1 }}
         className="bg-card rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
       >
-        <h2 className="text-xl font-semibold mb-6">Start Investigation</h2>
+        <h2 className="text-xl font-semibold mb-6">{t('modules:investigation.startInvestigation')}</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Incident</label>
+            <label className="block text-sm font-medium mb-2">{t('modules:investigation.incident')}</label>
             <select
               value={formData.incident_id}
               onChange={(e) => setFormData({ ...formData, incident_id: e.target.value })}
               className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               required
             >
-              <option value="">Select incident...</option>
+              <option value="">{t('modules:investigation.selectIncident')}</option>
             </select>
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-2">Lead Investigator</label>
+            <label className="block text-sm font-medium mb-2">{t('modules:investigation.leadInvestigator')}</label>
             <select
               value={formData.investigator_id}
               onChange={(e) => setFormData({ ...formData, investigator_id: e.target.value })}
               className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               required
             >
-              <option value="">Select investigator...</option>
+              <option value="">{t('modules:investigation.selectInvestigator')}</option>
             </select>
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-2">Investigation Date</label>
+            <label className="block text-sm font-medium mb-2">{t('modules:investigation.investigationDate')}</label>
             <input
               type="date"
               value={formData.investigation_date}
@@ -552,7 +553,7 @@ function CreateInvestigationModal({ onClose, onSuccess }: {
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-2">Location Details</label>
+            <label className="block text-sm font-medium mb-2">{t('modules:investigation.locationDetails')}</label>
             <textarea
               value={formData.location_details}
               onChange={(e) => setFormData({ ...formData, location_details: e.target.value })}
@@ -568,13 +569,13 @@ function CreateInvestigationModal({ onClose, onSuccess }: {
               onClick={onClose}
               className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted"
             >
-              Cancel
+              {t('common:cancel')}
             </button>
             <button
               type="submit"
               className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
             >
-              Start Investigation
+              {t('modules:investigation.startInvestigation')}
             </button>
           </div>
         </form>

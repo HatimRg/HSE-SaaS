@@ -95,6 +95,11 @@ class PpeItemSeeder extends Seeder
             ],
         ];
 
+        // Skip if PPE items already exist
+        if (PpeItem::withTrashed()->where('company_id', $company->id)->exists()) {
+            return;
+        }
+
         foreach ($items as $item) {
             PpeItem::create([
                 ...$item,

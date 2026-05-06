@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -43,7 +44,7 @@ class AuthController extends BaseController
 
         // Create token
         $token = $user->createToken('api-token', ['*'], 
-            $validated['remember'] ? now()->addDays(30) : now()->addHours(12)
+            ($validated['remember'] ?? false) ? now()->addDays(30) : now()->addHours(12)
         )->plainTextToken;
 
         // Log activity

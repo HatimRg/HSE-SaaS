@@ -4,8 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Worker;
 use App\Models\TrainingSession;
-use App\Models\KpiReport;
-use App\Models\SorReport;
+use App\Models\KpiValue;
+use App\Models\KpiDefinition;
+use App\Models\HseEvent;
+use App\Models\EventAction;
+use App\Models\EnvironmentalReading;
+use App\Models\WasteExport;
+use App\Models\RiskAssessment;
+use App\Models\WorkerDocument;
 use App\Models\WorkPermit;
 use App\Models\Inspection;
 use App\Models\PpeItem;
@@ -137,19 +143,73 @@ class ImportExportController extends BaseController
         $dateFrom = $request->date_from ?? null;
         $dateTo = $request->date_to ?? null;
 
-        $query = KpiReport::when($projectId, function ($query, $projectId) {
+        $query = KpiValue::with('definition')->when($projectId, function ($query, $projectId) {
             $query->where('project_id', $projectId);
         })->when($dateFrom, function ($query, $dateFrom) {
-            $query->whereDate('report_date', '>=', $dateFrom);
+            $query->whereDate('period_start', '>=', $dateFrom);
         })->when($dateTo, function ($query, $dateTo) {
-            $query->whereDate('report_date', '<=', $dateTo);
+            $query->whereDate('period_end', '<=', $dateTo);
         });
 
-        $reports = $query->with(['project', 'submittedBy'])->get();
+        $values = $query->get();
 
-        $fileName = 'kpi_reports_export_' . date('Y-m-d_H-i-s') . '.xlsx';
+        $fileName = 'kpi_values_export_' . date('Y-m-d_H-i-s') . '.xlsx';
 
-        return Excel::download(new KpiExport($reports), $fileName);
+        return Excel::download(new class($values) implements FromCollection, WithHeadings {
+            private $values;
+            public function __construct($values) { $this->values = $values; }
+            public function collection() { return $this->values->map(fn($v) => [
+                'definition' => $v->definition?->name,
+                'project_id' => $v->project_id,
+                'period_start' => $v->period_start,
+                'period_end' => $v->period_end,
+                'value' => $v->value,
+                'target' => $v->target_value,
+                'status' => $v->status,
+                'computed_at' => $v->computed_at,
+            ]); }
+            public function headings(): array { return ['Definition', 'Project ID', 'Period Start', 'Period End', 'Value', 'Target', 'Status', 'Computed At']; }
+        }, $fileName);
+    }
+
+    /**
+     * Export HSE events to Excel.
+     */
+    public function exportHseEvents(Request $request)
+    {
+        $projectId = $request->project_id ?? null;
+        $dateFrom = $request->date_from ?? null;
+        $dateTo = $request->date_to ?? null;
+
+        $query = HseEvent::with(['project', 'reporter', 'assignee'])->when($projectId, function ($query, $projectId) {
+            $query->where('project_id', $projectId);
+        })->when($dateFrom, function ($query, $dateFrom) {
+            $query->whereDate('occurred_at', '>=', $dateFrom);
+        })->when($dateTo, function ($query, $dateTo) {
+            $query->whereDate('occurred_at', '<=', $dateTo);
+        });
+
+        $events = $query->get();
+
+        $fileName = 'hse_events_export_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new class($events) implements FromCollection, WithHeadings {
+            private $events;
+            public function __construct($events) { $this->events = $events; }
+            public function collection() { return $this->events->map(fn($e) => [
+                'reference' => $e->reference,
+                'type' => $e->type,
+                'severity' => $e->severity,
+                'status' => $e->status,
+                'title' => $e->title,
+                'location' => $e->location,
+                'occurred_at' => $e->occurred_at,
+                'project' => $e->project?->name,
+                'reporter' => $e->reporter?->name,
+                'assignee' => $e->assignee?->name,
+            ]); }
+            public function headings(): array { return ['Reference', 'Type', 'Severity', 'Status', 'Title', 'Location', 'Occurred At', 'Project', 'Reporter', 'Assignee']; }
+        }, $fileName);
     }
 
     /**
@@ -171,11 +231,11 @@ class ImportExportController extends BaseController
             'project' => \App\Models\Project::find($projectId),
             'week_start' => $weekStart,
             'week_end' => $weekEnd,
-            'kpi_reports' => KpiReport::where('project_id', $projectId)
-                ->whereBetween('report_date', [$weekStart, $weekEnd])
+            'kpi_values' => KpiValue::with('definition')->where('project_id', $projectId)
+                ->whereBetween('computed_at', [$weekStart, $weekEnd])
                 ->get(),
-            'sor_reports' => SorReport::where('project_id', $projectId)
-                ->whereBetween('created_at', [$weekStart, $weekEnd])
+            'hse_events' => HseEvent::where('project_id', $projectId)
+                ->whereBetween('occurred_at', [$weekStart, $weekEnd])
                 ->get(),
             'work_permits' => WorkPermit::where('project_id', $projectId)
                 ->whereBetween('created_at', [$weekStart, $weekEnd])
@@ -290,6 +350,236 @@ class ImportExportController extends BaseController
         $fileName = $type . '_import_template.xlsx';
 
         return Excel::download(new $templateClass(), $fileName);
+    }
+
+    /**
+     * Export event actions to Excel.
+     */
+    public function exportEventActions(Request $request)
+    {
+        $projectId = $request->project_id ?? null;
+        $dateFrom = $request->date_from ?? null;
+        $dateTo = $request->date_to ?? null;
+
+        $query = EventAction::with(['assignee', 'verifier'])->when($projectId, function ($query, $projectId) {
+            $query->whereHas('source', fn($q) => $q->where('project_id', $projectId));
+        })->when($dateFrom, function ($query, $dateFrom) {
+            $query->whereDate('due_date', '>=', $dateFrom);
+        })->when($dateTo, function ($query, $dateTo) {
+            $query->whereDate('due_date', '<=', $dateTo);
+        });
+
+        $actions = $query->get();
+
+        $fileName = 'event_actions_export_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new class($actions) implements FromCollection, WithHeadings {
+            private $actions;
+            public function __construct($actions) { $this->actions = $actions; }
+            public function collection() { return $this->actions->map(fn($a) => [
+                'id' => $a->id,
+                'type' => $a->type,
+                'priority' => $a->priority,
+                'status' => $a->status,
+                'description' => $a->description,
+                'due_date' => $a->due_date?->format('Y-m-d'),
+                'completed_at' => $a->completed_at?->format('Y-m-d H:i:s'),
+                'assignee' => $a->assignee?->name,
+                'verifier' => $a->verifier?->name,
+            ]); }
+            public function headings(): array { return ['ID', 'Type', 'Priority', 'Status', 'Description', 'Due Date', 'Completed At', 'Assignee', 'Verifier']; }
+        }, $fileName);
+    }
+
+    /**
+     * Export environmental readings to Excel.
+     */
+    public function exportEnvironmentalReadings(Request $request)
+    {
+        $projectId = $request->project_id ?? null;
+        $dateFrom = $request->date_from ?? null;
+        $dateTo = $request->date_to ?? null;
+
+        $query = EnvironmentalReading::with(['project', 'measuredBy'])->when($projectId, function ($query, $projectId) {
+            $query->where('project_id', $projectId);
+        })->when($dateFrom, function ($query, $dateFrom) {
+            $query->whereDate('measured_at', '>=', $dateFrom);
+        })->when($dateTo, function ($query, $dateTo) {
+            $query->whereDate('measured_at', '<=', $dateTo);
+        });
+
+        $readings = $query->get();
+
+        $fileName = 'environmental_readings_export_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new class($readings) implements FromCollection, WithHeadings {
+            private $readings;
+            public function __construct($readings) { $this->readings = $readings; }
+            public function collection() { return $this->readings->map(fn($r) => [
+                'type' => $r->type,
+                'value' => $r->value,
+                'unit' => $r->unit,
+                'location' => $r->location,
+                'is_exceedance' => $r->is_exceedance ? 'Yes' : 'No',
+                'measured_at' => $r->measured_at?->format('Y-m-d H:i:s'),
+                'project' => $r->project?->name,
+                'measured_by' => $r->measuredBy?->name,
+            ]); }
+            public function headings(): array { return ['Type', 'Value', 'Unit', 'Location', 'Exceedance', 'Measured At', 'Project', 'Measured By']; }
+        }, $fileName);
+    }
+
+    /**
+     * Export waste exports to Excel.
+     */
+    public function exportWasteExports(Request $request)
+    {
+        $projectId = $request->project_id ?? null;
+        $dateFrom = $request->date_from ?? null;
+        $dateTo = $request->date_to ?? null;
+
+        $query = WasteExport::with(['project', 'recorder'])->when($projectId, function ($query, $projectId) {
+            $query->where('project_id', $projectId);
+        })->when($dateFrom, function ($query, $dateFrom) {
+            $query->whereDate('date', '>=', $dateFrom);
+        })->when($dateTo, function ($query, $dateTo) {
+            $query->whereDate('date', '<=', $dateTo);
+        });
+
+        $exports = $query->get();
+
+        $fileName = 'waste_exports_export_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new class($exports) implements FromCollection, WithHeadings {
+            private $exports;
+            public function __construct($exports) { $this->exports = $exports; }
+            public function collection() { return $this->exports->map(fn($e) => [
+                'date' => $e->date?->format('Y-m-d'),
+                'waste_type' => $e->waste_type,
+                'quantity' => $e->quantity,
+                'unit' => $e->unit,
+                'treatment' => $e->treatment,
+                'is_hazardous' => $e->is_hazardous ? 'Yes' : 'No',
+                'carrier_name' => $e->carrier_name,
+                'manifest_number' => $e->manifest_number,
+                'project' => $e->project?->name,
+            ]); }
+            public function headings(): array { return ['Date', 'Waste Type', 'Quantity', 'Unit', 'Treatment', 'Hazardous', 'Carrier', 'Manifest', 'Project']; }
+        }, $fileName);
+    }
+
+    /**
+     * Export risk assessments to Excel.
+     */
+    public function exportRiskAssessments(Request $request)
+    {
+        $projectId = $request->project_id ?? null;
+
+        $query = RiskAssessment::with(['project', 'assessor'])->when($projectId, function ($query, $projectId) {
+            $query->where('project_id', $projectId);
+        });
+
+        $assessments = $query->get();
+
+        $fileName = 'risk_assessments_export_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new class($assessments) implements FromCollection, WithHeadings {
+            private $assessments;
+            public function __construct($assessments) { $this->assessments = $assessments; }
+            public function collection() { return $this->assessments->map(fn($a) => [
+                'title' => $a->title,
+                'category' => $a->category,
+                'status' => $a->status,
+                'risk_level' => $a->risk_level,
+                'assessment_date' => $a->assessment_date?->format('Y-m-d'),
+                'next_review_date' => $a->next_review_date?->format('Y-m-d'),
+                'project' => $a->project?->name,
+                'assessor' => $a->assessor?->name,
+            ]); }
+            public function headings(): array { return ['Title', 'Category', 'Status', 'Risk Level', 'Assessment Date', 'Next Review', 'Project', 'Assessor']; }
+        }, $fileName);
+    }
+
+    /**
+     * Export worker documents to Excel.
+     */
+    public function exportWorkerDocuments(Request $request)
+    {
+        $workerId = $request->worker_id ?? null;
+        $projectId = $request->project_id ?? null;
+
+        $query = WorkerDocument::with(['worker'])->when($workerId, function ($query, $workerId) {
+            $query->where('worker_id', $workerId);
+        })->when($projectId, function ($query, $projectId) {
+            $query->whereHas('worker', fn($q) => $q->where('project_id', $projectId));
+        });
+
+        $documents = $query->get();
+
+        $fileName = 'worker_documents_export_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new class($documents) implements FromCollection, WithHeadings {
+            private $documents;
+            public function __construct($documents) { $this->documents = $documents; }
+            public function collection() { return $this->documents->map(fn($d) => [
+                'type' => $d->type,
+                'name' => $d->name,
+                'worker' => $d->worker?->full_name,
+                'issuer' => $d->issuer,
+                'issue_date' => $d->issue_date?->format('Y-m-d'),
+                'expiry_date' => $d->expiry_date?->format('Y-m-d'),
+                'status' => $d->status,
+            ]); }
+            public function headings(): array { return ['Type', 'Name', 'Worker', 'Issuer', 'Issue Date', 'Expiry Date', 'Status']; }
+        }, $fileName);
+    }
+
+    /**
+     * Generate HSE events PDF report.
+     */
+    public function generateHseEventsPdf(Request $request)
+    {
+        $projectId = $request->project_id ?? null;
+        $dateFrom = $request->date_from ?? null;
+        $dateTo = $request->date_to ?? null;
+
+        $query = HseEvent::with(['project', 'reporter', 'assignee'])->when($projectId, function ($query, $projectId) {
+            $query->where('project_id', $projectId);
+        })->when($dateFrom, function ($query, $dateFrom) {
+            $query->whereDate('occurred_at', '>=', $dateFrom);
+        })->when($dateTo, function ($query, $dateTo) {
+            $query->whereDate('occurred_at', '<=', $dateTo);
+        });
+
+        $events = $query->orderBy('occurred_at', 'desc')->get();
+        $project = $projectId ? \App\Models\Project::find($projectId) : null;
+
+        $pdf = Pdf::loadView('exports.hse-events-pdf', [
+            'events' => $events,
+            'project' => $project,
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'generatedAt' => now(),
+        ]);
+
+        $fileName = 'hse_events_report_' . date('Y-m-d') . '.pdf';
+        return $pdf->download($fileName);
+    }
+
+    /**
+     * Generate risk assessment PDF report.
+     */
+    public function generateRiskAssessmentPdf(Request $request, $id)
+    {
+        $assessment = RiskAssessment::with(['project', 'assessor', 'items.hazard'])->findOrFail($id);
+
+        $pdf = Pdf::loadView('exports.risk-assessment-pdf', [
+            'assessment' => $assessment,
+            'generatedAt' => now(),
+        ]);
+
+        $fileName = 'risk_assessment_' . $assessment->id . '_' . date('Y-m-d') . '.pdf';
+        return $pdf->download($fileName);
     }
 }
 

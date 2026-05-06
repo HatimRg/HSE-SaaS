@@ -36,7 +36,7 @@ class KpiReport extends BaseModel
         'total_hours' => 'decimal:2',
     ];
 
-    protected $encrypted = ['remarks'];
+    protected array $encrypted = ['remarks'];
 
     /**
      * Get the project.

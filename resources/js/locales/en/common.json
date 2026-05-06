@@ -79,6 +79,11 @@
   "urgent": "Urgent",
   "warning": "Warning",
   "info": "Info",
+  "language": "Language",
+  "theme": {
+    "light": "Light Mode",
+    "dark": "Dark Mode"
+  },
   "login": {
     "title": "Login",
     "subtitle": "Access your HSE dashboard",
@@ -93,6 +98,25 @@
     "signUp": "Sign up",
     "invalidCredentials": "Invalid credentials",
     "success": "Login successful",
-    "demoCredentials": "Demo credentials"
+    "demoCredentials": "Demo credentials",
+    "tagline": "Health, Safety, Environment",
+    "heroTitle1": "Safety is not",
+    "heroTitle2": "a feature. It is",
+    "heroTitle3": "the foundation.",
+    "heroSubtitle": "Manage incidents, permits, inspections, and compliance across all your projects from one platform.",
+    "trustedBy": "Trusted by 200+ safety teams worldwide",
+    "copyright": "© 2024 SafeSite Platform",
+    "switchLanguage": "Switch language",
+    "hseqTagline": "Health • Safety • Environment • Quality",
+    "emailPlaceholder": "email@company.com",
+    "allRightsReserved": "All rights reserved."
+  },
+  "record": "Record",
+  "errors": {
+    "notFoundTitle": "Page Not Found",
+    "notFoundMessage": "The page you are looking for does not exist or has been moved.",
+    "serverErrorTitle": "Server Error",
+    "serverErrorMessage": "Something went wrong on our end. Please try again later.",
+    "technicalDetail": "Technical Details"
   }
 }

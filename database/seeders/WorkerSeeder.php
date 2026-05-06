@@ -100,10 +100,10 @@ class WorkerSeeder extends Seeder
         ];
 
         foreach ($workers as $workerData) {
-            Worker::create([
-                ...$workerData,
-                'company_id' => $company->id,
-            ]);
+            Worker::firstOrCreate(
+                ['company_id' => $company->id, 'cin' => $workerData['cin']],
+                collect($workerData)->except('cin')->toArray()
+            );
         }
     }
 }

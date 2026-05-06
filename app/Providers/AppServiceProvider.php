@@ -8,6 +8,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use App\Models\HseEvent;
+use App\Models\EnvironmentalReading;
+use App\Models\WorkPermit;
+use App\Models\WorkerDocument;
+use App\Observers\HseEventObserver;
+use App\Observers\EnvironmentalReadingObserver;
+use App\Observers\WorkPermitObserver;
+use App\Observers\WorkerDocumentObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,6 +38,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register model observers for notification triggers
+        HseEvent::observe(HseEventObserver::class);
+        EnvironmentalReading::observe(EnvironmentalReadingObserver::class);
+        WorkPermit::observe(WorkPermitObserver::class);
+        WorkerDocument::observe(WorkerDocumentObserver::class);
+
         // Prevent lazy loading in production
         Model::preventLazyLoading(!app()->isProduction());
 

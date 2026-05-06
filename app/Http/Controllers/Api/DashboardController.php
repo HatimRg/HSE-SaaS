@@ -3,9 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\DailyHeadcount;
+use App\Models\EnvironmentalReading;
+use App\Models\EventAction;
+use App\Models\HseEvent;
 use App\Models\Inspection;
-use App\Models\KpiReport;
-use App\Models\SorReport;
+use App\Models\KpiDefinition;
+use App\Models\KpiValue;
+use App\Models\PpeStock;
+use App\Models\WorkerDocument;
 use App\Models\WorkPermit;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -49,7 +54,7 @@ class DashboardController extends BaseController
         $stats = [
             'projects' => \App\Models\Project::where('company_id', $companyId)->where('status', 'active')->count(),
             'workers' => \App\Models\Worker::where('company_id', $companyId)->where('status', 'active')->count(),
-            'open_sors' => SorReport::where('company_id', $companyId)->whereIn('status', ['open', 'in-progress'])->count(),
+            'open_events' => HseEvent::where('company_id', $companyId)->whereIn('status', ['open', 'in_progress'])->count(),
             'active_permits' => WorkPermit::where('company_id', $companyId)->where('status', 'approved')->where('expiry_date', '>', now())->count(),
             'upcoming_inspections' => Inspection::where('company_id', $companyId)->whereBetween('next_inspection_date', [now(), now()->addDays(7)])->count(),
             'training_sessions' => \App\Models\TrainingSession::where('company_id', $companyId)->where('start_date', '>', now())->count(),
@@ -124,14 +129,16 @@ class DashboardController extends BaseController
         };
 
         return [
-            'total_man_hours' => $baseQuery(KpiReport::class)
-                ->whereBetween('period_start', [$dateRange['start'], $dateRange['end']])
-                ->sum('total_hours'),
-            'total_injuries' => $baseQuery(KpiReport::class)
-                ->whereBetween('period_start', [$dateRange['start'], $dateRange['end']])
-                ->sum('injuries'),
-            'open_observations' => $baseQuery(SorReport::class)
-                ->whereIn('status', ['open', 'in-progress'])
+            'total_man_hours' => $baseQuery(DailyHeadcount::class)
+                ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
+                ->sum('total_count') * 8,
+            'total_injuries' => $baseQuery(HseEvent::class)
+                ->where('type', 'incident')
+                ->whereIn('severity', ['high', 'critical'])
+                ->whereBetween('occurred_at', [$dateRange['start'], $dateRange['end']])
+                ->count(),
+            'open_observations' => $baseQuery(HseEvent::class)
+                ->whereIn('status', ['open', 'in_progress'])
                 ->count(),
             'inspection_score' => $baseQuery(Inspection::class)
                 ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
@@ -144,29 +151,40 @@ class DashboardController extends BaseController
      */
     private function getSafetyMetrics(int $companyId, ?int $projectId, array $dateRange): array
     {
-        $query = KpiReport::where('company_id', $companyId)
-            ->whereBetween('period_start', [$dateRange['start'], $dateRange['end']]);
-
+        $eventQuery = HseEvent::where('company_id', $companyId)
+            ->whereBetween('occurred_at', [$dateRange['start'], $dateRange['end']]);
         if ($projectId) {
-            $query->where('project_id', $projectId);
+            $eventQuery->where('project_id', $projectId);
         }
 
-        $totals = $query->select(
-            DB::raw('SUM(total_hours) as total_hours'),
-            DB::raw('SUM(injuries) as total_injuries'),
-            DB::raw('SUM(first_aids) as total_first_aids'),
-            DB::raw('SUM(near_misses) as total_near_misses'),
-            DB::raw('SUM(observations) as total_observations')
-        )->first();
+        $totalIncidents = (clone $eventQuery)->where('type', 'incident')->whereIn('severity', ['high', 'critical'])->count();
+        $totalNearMisses = (clone $eventQuery)->where('type', 'near_miss')->count();
+        $totalEvents = (clone $eventQuery)->count();
 
-        $totalHours = $totals->total_hours ?? 1;
+        $headcountQuery = DailyHeadcount::where('company_id', $companyId)
+            ->whereBetween('date', [$dateRange['start'], $dateRange['end']]);
+        if ($projectId) {
+            $headcountQuery->where('project_id', $projectId);
+        }
+        $totalHours = $headcountQuery->sum('total_count') * 8;
+
+        // Also check KPI engine for computed values
+        $trirValue = KpiValue::where('company_id', $companyId)
+            ->whereHas('definition', fn($q) => $q->where('code', 'trir'))
+            ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+            ->orderByDesc('computed_at')->value('value');
+
+        $ltifrValue = KpiValue::where('company_id', $companyId)
+            ->whereHas('definition', fn($q) => $q->where('code', 'ltifr'))
+            ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+            ->orderByDesc('computed_at')->value('value');
 
         return [
-            'trir' => round(($totals->total_injuries * 200000) / $totalHours, 2),
-            'frequency_rate' => round(($totals->total_injuries * 1000000) / $totalHours, 2),
-            'severity_rate' => 0, // Would need days lost calculation
-            'total_man_hours' => round($totals->total_hours ?? 0, 2),
-            'near_miss_rate' => round(($totals->total_near_misses / max($totals->total_injuries, 1)), 2),
+            'trir' => $trirValue ?? ($totalHours > 0 ? round(($totalIncidents * 200000) / $totalHours, 2) : 0),
+            'frequency_rate' => $ltifrValue ?? ($totalHours > 0 ? round(($totalIncidents * 1000000) / $totalHours, 2) : 0),
+            'severity_rate' => 0,
+            'total_man_hours' => round($totalHours, 2),
+            'near_miss_rate' => $totalEvents > 0 ? round(($totalNearMisses / $totalEvents) * 100, 1) : 0,
         ];
     }
 
@@ -201,39 +219,39 @@ class DashboardController extends BaseController
     {
         $activity = [];
 
-        // Recent SORs
-        $sorQuery = SorReport::where('company_id', $companyId)->with(['reporter', 'project']);
+        // Recent HSE Events
+        $eventQuery = HseEvent::where('company_id', $companyId)->with(['reporter', 'project']);
         if ($projectId) {
-            $sorQuery->where('project_id', $projectId);
+            $eventQuery->where('project_id', $projectId);
         }
-        $recentSors = $sorQuery->latest()->limit(5)->get();
+        $recentEvents = $eventQuery->latest()->limit(5)->get();
 
-        foreach ($recentSors as $sor) {
+        foreach ($recentEvents as $event) {
             $activity[] = [
-                'type' => 'sor',
-                'title' => $sor->title,
-                'description' => "New SOR reported by {$sor->reporter?->name}",
-                'project' => $sor->project?->name,
-                'date' => $sor->created_at->toIso8601String(),
-                'status' => $sor->status,
-                'severity' => $sor->severity,
+                'type' => $event->type,
+                'title' => $event->title,
+                'description' => "Event reported by {$event->reporter?->name}",
+                'project' => $event->project?->name,
+                'date' => $event->created_at->toIso8601String(),
+                'status' => $event->status,
+                'severity' => $event->severity,
             ];
         }
 
-        // Recent KPIs
-        $kpiQuery = KpiReport::where('company_id', $companyId)->with(['creator', 'project']);
+        // Recent KPI computations
+        $kpiQuery = KpiValue::where('company_id', $companyId)->with(['definition', 'project']);
         if ($projectId) {
             $kpiQuery->where('project_id', $projectId);
         }
-        $recentKpis = $kpiQuery->latest()->limit(3)->get();
+        $recentKpis = $kpiQuery->latest('computed_at')->limit(3)->get();
 
         foreach ($recentKpis as $kpi) {
             $activity[] = [
                 'type' => 'kpi',
-                'title' => 'KPI Report Submitted',
-                'description' => "Report for {$kpi->project?->name} by {$kpi->creator?->name}",
+                'title' => "{$kpi->definition?->name} Computed",
+                'description' => "Value: {$kpi->value} for {$kpi->project?->name}",
                 'project' => $kpi->project?->name,
-                'date' => $kpi->created_at->toIso8601String(),
+                'date' => $kpi->computed_at->toIso8601String(),
                 'status' => $kpi->status,
             ];
         }
@@ -269,39 +287,69 @@ class DashboardController extends BaseController
             ];
         }
 
-        // Overdue SORs
-        $sorQuery = SorReport::where('company_id', $companyId)
-            ->whereIn('status', ['open', 'in-progress'])
+        // Overdue events
+        $eventQuery = HseEvent::where('company_id', $companyId)
+            ->whereIn('status', ['open', 'in_progress'])
             ->where('due_date', '<', now());
         if ($projectId) {
-            $sorQuery->where('project_id', $projectId);
+            $eventQuery->where('project_id', $projectId);
         }
-        $overdueSors = $sorQuery->count();
+        $overdueEvents = $eventQuery->count();
 
-        if ($overdueSors > 0) {
+        if ($overdueEvents > 0) {
             $alerts[] = [
                 'type' => 'urgent',
-                'title' => 'Overdue Safety Observations',
-                'message' => "{$overdueSors} SOR(s) are overdue",
-                'action_url' => '/sor-reports',
+                'title' => 'Overdue Safety Events',
+                'message' => "{$overdueEvents} event(s) are overdue",
+                'action_url' => '/hse-events',
             ];
         }
 
-        // Medical fitness expiring
-        $medicalQuery = \App\Models\Worker::where('company_id', $companyId)
-            ->where('status', 'active')
-            ->where('medical_fitness_date', '<=', now()->subYear()->addDays(30));
-        if ($projectId) {
-            // Workers assigned to project would need a join
-        }
-        $medicalExpiring = $medicalQuery->count();
+        // Overdue actions
+        $actionQuery = EventAction::where('company_id', $companyId)
+            ->whereNotIn('status', ['completed', 'verified'])
+            ->where('due_date', '<', now());
+        $overdueActions = $actionQuery->count();
 
-        if ($medicalExpiring > 0) {
+        if ($overdueActions > 0) {
+            $alerts[] = [
+                'type' => 'warning',
+                'title' => 'Overdue Actions',
+                'message' => "{$overdueActions} corrective/preventive action(s) are overdue",
+                'action_url' => '/event-actions',
+            ];
+        }
+
+        // Worker documents expiring
+        $docQuery = WorkerDocument::where('company_id', $companyId)
+            ->where('status', 'valid')
+            ->whereBetween('expiry_date', [now(), now()->addDays(30)]);
+        $docsExpiring = $docQuery->count();
+
+        if ($docsExpiring > 0) {
             $alerts[] = [
                 'type' => 'info',
-                'title' => 'Medical Fitness Expiring',
-                'message' => "{$medicalExpiring} worker(s) have medical fitness expiring within 30 days",
+                'title' => 'Documents Expiring',
+                'message' => "{$docsExpiring} worker document(s) expire within 30 days",
                 'action_url' => '/workers',
+            ];
+        }
+
+        // Environmental exceedances
+        $exceedanceQuery = EnvironmentalReading::where('company_id', $companyId)
+            ->where('is_exceedance', true)
+            ->where('measured_at', '>=', now()->subDay());
+        if ($projectId) {
+            $exceedanceQuery->where('project_id', $projectId);
+        }
+        $recentExceedances = $exceedanceQuery->count();
+
+        if ($recentExceedances > 0) {
+            $alerts[] = [
+                'type' => 'urgent',
+                'title' => 'Environmental Exceedances',
+                'message' => "{$recentExceedances} environmental threshold exceedance(s) in last 24h",
+                'action_url' => '/environment',
             ];
         }
 
@@ -313,14 +361,14 @@ class DashboardController extends BaseController
      */
     private function getSafetyCharts(int $companyId, array $dateRange): array
     {
-        // Monthly incidents trend
-        $monthlyData = KpiReport::where('company_id', $companyId)
-            ->whereBetween('period_start', [$dateRange['start']->copy()->subMonths(11), $dateRange['end']])
+        // Monthly events trend from hse_events
+        $monthlyData = HseEvent::where('company_id', $companyId)
+            ->whereBetween('occurred_at', [$dateRange['start']->copy()->subMonths(11), $dateRange['end']])
             ->select(
-                DB::raw('DATE_FORMAT(period_start, "%Y-%m") as month'),
-                DB::raw('SUM(injuries) as injuries'),
-                DB::raw('SUM(near_misses) as near_misses'),
-                DB::raw('SUM(observations) as observations')
+                DB::raw('DATE_FORMAT(occurred_at, "%Y-%m") as month'),
+                DB::raw('SUM(CASE WHEN type = "incident" THEN 1 ELSE 0 END) as incidents'),
+                DB::raw('SUM(CASE WHEN type = "near_miss" THEN 1 ELSE 0 END) as near_misses'),
+                DB::raw('SUM(CASE WHEN type = "observation" THEN 1 ELSE 0 END) as observations')
             )
             ->groupBy('month')
             ->orderBy('month')
@@ -330,19 +378,24 @@ class DashboardController extends BaseController
             'incidents_trend' => [
                 'labels' => $monthlyData->pluck('month'),
                 'datasets' => [
-                    ['label' => 'Injuries', 'data' => $monthlyData->pluck('injuries')],
+                    ['label' => 'Incidents', 'data' => $monthlyData->pluck('incidents')],
                     ['label' => 'Near Misses', 'data' => $monthlyData->pluck('near_misses')],
                     ['label' => 'Observations', 'data' => $monthlyData->pluck('observations')],
                 ],
             ],
-            'sor_status' => [
-                'labels' => ['Open', 'In Progress', 'Closed'],
+            'event_status' => [
+                'labels' => ['Open', 'In Progress', 'Closed', 'Verified'],
                 'data' => [
-                    SorReport::where('company_id', $companyId)->where('status', 'open')->count(),
-                    SorReport::where('company_id', $companyId)->where('status', 'in-progress')->count(),
-                    SorReport::where('company_id', $companyId)->where('status', 'closed')->count(),
+                    HseEvent::where('company_id', $companyId)->where('status', 'open')->count(),
+                    HseEvent::where('company_id', $companyId)->where('status', 'in_progress')->count(),
+                    HseEvent::where('company_id', $companyId)->where('status', 'closed')->count(),
+                    HseEvent::where('company_id', $companyId)->where('status', 'verified')->count(),
                 ],
             ],
+            'event_by_type' => HseEvent::where('company_id', $companyId)
+                ->select('type', DB::raw('count(*) as count'))
+                ->groupBy('type')
+                ->pluck('count', 'type'),
         ];
     }
 
@@ -409,9 +462,20 @@ class DashboardController extends BaseController
     private function getEnvironmentalCharts(int $companyId, array $dateRange): array
     {
         return [
-            'environmental_incidents' => KpiReport::where('company_id', $companyId)
-                ->whereBetween('period_start', [$dateRange['start'], $dateRange['end']])
-                ->sum('environmental_incidents'),
+            'readings_by_type' => EnvironmentalReading::where('company_id', $companyId)
+                ->whereBetween('measured_at', [$dateRange['start'], $dateRange['end']])
+                ->select('type', DB::raw('AVG(value) as avg_value'), DB::raw('count(*) as count'))
+                ->groupBy('type')
+                ->get(),
+            'exceedances' => EnvironmentalReading::where('company_id', $companyId)
+                ->where('is_exceedance', true)
+                ->whereBetween('measured_at', [$dateRange['start'], $dateRange['end']])
+                ->count(),
+            'waste_summary' => \App\Models\WasteExport::where('company_id', $companyId)
+                ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
+                ->select('waste_type', DB::raw('SUM(quantity) as total'), DB::raw('count(*) as exports'))
+                ->groupBy('waste_type')
+                ->get(),
         ];
     }
 }

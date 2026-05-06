@@ -2,15 +2,21 @@
   "dashboard": "Tableau de bord",
   "kpi": "KPI",
   "sor": "Observations",
+  "risk": "Évaluation des risques",
+  "investigation": "Enquêtes",
   "permits": "Permis",
   "inspections": "Inspections",
+  "osha": "Conformité OSHA",
   "workers": "Personnel",
   "training": "Formation",
   "ppe": "EPI",
   "environment": "Environnement",
   "community": "Communauté",
+  "analytics": "Analytique",
   "library": "Documents",
   "admin": "Administration",
   "settings": "Paramètres",
-  "help": "Aide"
+  "help": "Aide",
+  "users": "Utilisateurs",
+  "projects": "Projets"
 }

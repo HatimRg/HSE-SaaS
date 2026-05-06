@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\KpiReport;
-use App\Models\SorReport;
+use App\Models\KpiValue;
+use App\Models\KpiDefinition;
+use App\Models\HseEvent;
 use App\Models\Project;
 use App\Models\Worker;
 use App\Models\Inspection;
@@ -55,56 +56,52 @@ class AnalyticsController extends BaseController
      */
     private function getPerformanceMetrics($projectId, $dateFrom)
     {
-        $query = KpiReport::where('report_date', '>=', $dateFrom);
+        $query = KpiValue::where('computed_at', '>=', $dateFrom);
         if ($projectId) {
             $query->where('project_id', $projectId);
         }
 
-        $reports = $query->orderBy('report_date', 'asc')->get();
+        $values = $query->with('definition')->orderBy('computed_at', 'asc')->get();
 
-        // Calculate TRIR, LTIFR, DART rates
+        // Calculate TRIR, LTIFR, DART rates from KPI values
         $trirData = [];
         $ltifrData = [];
         $dartData = [];
         $severityData = [];
 
-        foreach ($reports as $report) {
-            $trir = $report->total_work_hours > 0 ? 
-                ($report->recordable_injuries * 200000) / $report->total_work_hours : 0;
-            
-            $ltifr = $report->total_work_hours > 0 ? 
-                ($report->lost_time_injuries * 200000) / $report->total_work_hours : 0;
-            
-            $dart = $report->total_work_hours > 0 ? 
-                ($report->dart_cases * 200000) / $report->total_work_hours : 0;
+        foreach ($values as $value) {
+            $date = $value->period_start?->format('Y-m-d') ?? $value->computed_at?->format('Y-m-d');
+            $defName = $value->definition?->name ?? '';
 
-            $trirData[] = [
-                'date' => $report->report_date->format('Y-m-d'),
-                'value' => round($trir, 2),
-                'benchmark' => 3.0, // Industry average
-                'target' => 1.5, // Target rate
+            $entry = [
+                'date' => $date,
+                'value' => round((float) $value->value, 2),
+                'benchmark' => 3.0,
+                'target' => (float) ($value->target_value ?? 1.5),
             ];
 
-            $ltifrData[] = [
-                'date' => $report->report_date->format('Y-m-d'),
-                'value' => round($ltifr, 2),
-                'benchmark' => 2.0,
-                'target' => 0.5,
-            ];
+            if (str_contains(strtolower($defName), 'trir')) {
+                $trirData[] = $entry;
+            } elseif (str_contains(strtolower($defName), 'ltifr')) {
+                $ltifrData[] = $entry;
+            } elseif (str_contains(strtolower($defName), 'dart')) {
+                $dartData[] = $entry;
+            }
+        }
 
-            $dartData[] = [
-                'date' => $report->report_date->format('Y-m-d'),
-                'value' => round($dart, 2),
-                'benchmark' => 2.5,
-                'target' => 1.0,
-            ];
+        // Get severity distribution from HSE events
+        $events = HseEvent::where('occurred_at', '>=', $dateFrom)
+            ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+            ->get();
 
+        $severityByMonth = $events->groupBy(fn($e) => $e->occurred_at?->format('Y-m'));
+        foreach ($severityByMonth as $month => $monthEvents) {
             $severityData[] = [
-                'date' => $report->report_date->format('Y-m-d'),
-                'fatal' => $report->fatal_injuries ?? 0,
-                'critical' => $report->critical_injuries ?? 0,
-                'major' => $report->major_injuries ?? 0,
-                'minor' => $report->minor_injuries ?? 0,
+                'date' => $month,
+                'fatal' => $monthEvents->where('severity', 'critical')->where('type', 'incident')->count(),
+                'critical' => $monthEvents->where('severity', 'critical')->count(),
+                'major' => $monthEvents->where('severity', 'high')->count(),
+                'minor' => $monthEvents->where('severity', 'medium')->count(),
             ];
         }
 
@@ -127,7 +124,7 @@ class AnalyticsController extends BaseController
      */
     private function getSafetyTrends($projectId, $dateFrom)
     {
-        $query = SorReport::where('incident_date', '>=', $dateFrom);
+        $query = HseEvent::where('occurred_at', '>=', $dateFrom);
         if ($projectId) {
             $query->where('project_id', $projectId);
         }
@@ -136,21 +133,21 @@ class AnalyticsController extends BaseController
 
         // Group by month
         $monthlyTrends = $incidents->groupBy(function ($incident) {
-            return $incident->incident_date->format('Y-m');
+            return $incident->occurred_at?->format('Y-m');
         })->map(function ($monthIncidents, $month) {
             return [
                 'month' => $month,
                 'total_incidents' => $monthIncidents->count(),
                 'near_misses' => $monthIncidents->where('type', 'near_miss')->count(),
-                'property_damage' => $monthIncidents->where('type', 'property_damage')->count(),
-                'injury' => $monthIncidents->where('type', 'injury')->count(),
-                'environmental' => $monthIncidents->where('type', 'environmental')->count(),
+                'observations' => $monthIncidents->where('type', 'observation')->count(),
+                'incidents' => $monthIncidents->where('type', 'incident')->count(),
+                'environmental' => $monthIncidents->where('type', 'hazard')->count(),
             ];
         })->values()->toArray();
 
         // Incident patterns by time of day
         $timePatterns = $incidents->groupBy(function ($incident) {
-            return $incident->incident_date->format('H');
+            return $incident->occurred_at?->format('H');
         })->map(function ($hourIncidents, $hour) {
             return [
                 'hour' => (int)$hour,
@@ -161,12 +158,12 @@ class AnalyticsController extends BaseController
 
         // Incident patterns by day of week
         $dayPatterns = $incidents->groupBy(function ($incident) {
-            return $incident->incident_date->format('l');
+            return $incident->occurred_at?->format('l');
         })->map(function ($dayIncidents, $day) {
             return [
                 'day' => $day,
                 'count' => $dayIncidents->count(),
-                'severity_score' => $dayIncidents->avg('severity_score') ?? 0,
+                'severity_score' => $dayIncidents->avg('escalation_level') ?? 0,
             ];
         })->toArray();
 
@@ -399,7 +396,7 @@ class AnalyticsController extends BaseController
     private function getCostAnalysis($projectId, $dateFrom)
     {
         // Incident costs
-        $incidentCosts = SorReport::where('incident_date', '>=', $dateFrom)
+        $incidentCosts = HseEvent::where('occurred_at', '>=', $dateFrom)
             ->when($projectId, function ($q) use ($projectId) {
                 $q->where('project_id', $projectId);
             })
@@ -428,7 +425,7 @@ class AnalyticsController extends BaseController
             ],
             'cost_trends' => [
                 'monthly_costs' => $this->getMonthlyCosts($projectId, $dateFrom),
-                'cost_per_incident' => $incidentCosts / max(SorReport::where('incident_date', '>=', $dateFrom)->count(), 1),
+                'cost_per_incident' => $incidentCosts / max(HseEvent::where('occurred_at', '>=', $dateFrom)->count(), 1),
                 'cost_per_worker' => ($incidentCosts + $trainingCosts + $ppeCosts + $complianceCosts) / max(Worker::count(), 1),
             ],
         ];
@@ -589,19 +586,19 @@ class AnalyticsController extends BaseController
     {
         $projectId = $request->project_id;
 
-        $kpiQuery = \App\Models\KpiReport::query();
+        $kpiQuery = KpiValue::with('definition');
         if ($projectId) {
             $kpiQuery->where('project_id', $projectId);
         }
 
-        $kpis = $kpiQuery->latest()->take(20)->get();
+        $kpis = $kpiQuery->latest('computed_at')->take(20)->get();
 
         return $this->successResponse([
             'kpis' => $kpis,
             'summary' => [
                 'total' => $kpiQuery->count(),
-                'submitted' => $kpiQuery->where('status', 'submitted')->count(),
-                'approved' => $kpiQuery->where('status', 'approved')->count(),
+                'on_target' => $kpiQuery->where('status', 'on_target')->count(),
+                'warning' => $kpiQuery->where('status', 'warning')->count(),
             ],
         ]);
     }
@@ -619,8 +616,8 @@ class AnalyticsController extends BaseController
             $month = now()->subMonths($i);
             $trends[] = [
                 'month' => $month->format('Y-m'),
-                'incidents' => \App\Models\SorReport::whereYear('incident_date', $month->year)
-                    ->whereMonth('incident_date', $month->month)
+                'incidents' => HseEvent::whereYear('occurred_at', $month->year)
+                    ->whereMonth('occurred_at', $month->month)
                     ->when($projectId, fn($q) => $q->where('project_id', $projectId))
                     ->count(),
                 'inspections' => \App\Models\Inspection::whereYear('inspection_date', $month->year)

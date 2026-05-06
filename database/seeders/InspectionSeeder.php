@@ -18,7 +18,6 @@ class InspectionSeeder extends Seeder
 
         $inspections = [
             [
-                'reference' => Inspection::generateReference(),
                 'date' => now()->subDays(7),
                 'type' => 'safety',
                 'location' => 'Building A',
@@ -29,7 +28,6 @@ class InspectionSeeder extends Seeder
                 'status' => 'completed',
             ],
             [
-                'reference' => Inspection::generateReference(),
                 'date' => now()->subDays(3),
                 'type' => 'ppe',
                 'location' => 'Main Entrance',
@@ -40,7 +38,6 @@ class InspectionSeeder extends Seeder
                 'status' => 'completed',
             ],
             [
-                'reference' => Inspection::generateReference(),
                 'date' => now()->subDay(),
                 'type' => 'equipment',
                 'location' => 'Equipment Yard',
@@ -51,7 +48,6 @@ class InspectionSeeder extends Seeder
                 'status' => 'pending_actions',
             ],
             [
-                'reference' => Inspection::generateReference(),
                 'date' => now()->subDays(14),
                 'type' => 'housekeeping',
                 'location' => 'Storage Area',
@@ -63,8 +59,14 @@ class InspectionSeeder extends Seeder
             ],
         ];
 
+        // Skip if inspections already exist for this project
+        if (Inspection::withTrashed()->where('project_id', $project->id)->exists()) {
+            return;
+        }
+
         foreach ($inspections as $inspection) {
             Inspection::create([
+                'reference' => Inspection::generateReference(),
                 ...$inspection,
                 'company_id' => $company->id,
                 'project_id' => $project->id,

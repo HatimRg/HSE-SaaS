@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Compute KPIs daily at 1 AM
+        $schedule->command('kpi:compute --period=month')->dailyAt('01:00')->withoutOverlapping();
     }
 
     /**

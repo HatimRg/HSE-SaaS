@@ -18,12 +18,12 @@ class UserSeeder extends Seeder
         $hseManagerRole = Role::where('name', 'hse_manager')->first();
 
         // Super Admin - has access to ALL projects
-        $admin = User::create([
-            'company_id' => $company->id,
-            'role_id' => $adminRole->id,
+        $admin = User::firstOrCreate(
+            ['company_id' => $company->id, 'email' => 'admin@demo.com'],
+            [
+            'role_id' => $adminRole?->id,
             'first_name' => 'System',
             'last_name' => 'Administrator',
-            'email' => 'admin@demo.com',
             'phone' => '+212 600 000 001',
             'password' => Hash::make('password'),
             'project_access_type' => 'all',
@@ -33,12 +33,12 @@ class UserSeeder extends Seeder
         ]);
 
         // HSE Manager - has access to ALL projects
-        User::create([
-            'company_id' => $company->id,
-            'role_id' => $hseManagerRole->id,
+        User::firstOrCreate(
+            ['company_id' => $company->id, 'email' => 'hse@demo.com'],
+            [
+            'role_id' => $hseManagerRole?->id,
             'first_name' => 'HSE',
             'last_name' => 'Manager',
-            'email' => 'hse@demo.com',
             'phone' => '+212 600 000 002',
             'password' => Hash::make('password'),
             'project_access_type' => 'all',
@@ -48,12 +48,12 @@ class UserSeeder extends Seeder
         ]);
 
         // Engineer - has access to specific projects only
-        $engineer = User::create([
-            'company_id' => $company->id,
-            'role_id' => $engineerRole->id,
+        $engineer = User::firstOrCreate(
+            ['company_id' => $company->id, 'email' => 'engineer@demo.com'],
+            [
+            'role_id' => $engineerRole?->id,
             'first_name' => 'Project',
             'last_name' => 'Engineer',
-            'email' => 'engineer@demo.com',
             'phone' => '+212 600 000 003',
             'password' => Hash::make('password'),
             'project_access_type' => 'projects',
@@ -64,12 +64,12 @@ class UserSeeder extends Seeder
 
         // Supervisor - has access to specific projects only
         $supervisorRole = Role::where('name', 'supervisor')->first();
-        $supervisor = User::create([
-            'company_id' => $company->id,
-            'role_id' => $supervisorRole->id,
+        $supervisor = User::firstOrCreate(
+            ['company_id' => $company->id, 'email' => 'supervisor@demo.com'],
+            [
+            'role_id' => $supervisorRole?->id,
             'first_name' => 'Site',
             'last_name' => 'Supervisor',
-            'email' => 'supervisor@demo.com',
             'phone' => '+212 600 000 004',
             'password' => Hash::make('password'),
             'project_access_type' => 'projects',
@@ -80,12 +80,12 @@ class UserSeeder extends Seeder
 
         // HR Director - has access to ALL projects
         $hrDirectorRole = Role::where('name', 'hr_director')->first();
-        User::create([
-            'company_id' => $company->id,
-            'role_id' => $hrDirectorRole->id,
+        User::firstOrCreate(
+            ['company_id' => $company->id, 'email' => 'hr@demo.com'],
+            [
+            'role_id' => $hrDirectorRole?->id,
             'first_name' => 'HR',
             'last_name' => 'Director',
-            'email' => 'hr@demo.com',
             'phone' => '+212 600 000 005',
             'password' => Hash::make('password'),
             'project_access_type' => 'all',
@@ -96,7 +96,7 @@ class UserSeeder extends Seeder
 
         // Assign specific projects to engineer and supervisor (project_access_type = 'projects')
         $projects = \App\Models\Project::limit(2)->get();
-        $engineer->assignedProjects()->attach($projects->pluck('id'));
-        $supervisor->assignedProjects()->attach($projects->pluck('id'));
+        $engineer->assignedProjects()->syncWithoutDetaching($projects->pluck('id'));
+        $supervisor->assignedProjects()->syncWithoutDetaching($projects->pluck('id'));
     }
 }

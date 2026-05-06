@@ -2,15 +2,21 @@
   "dashboard": "Dashboard",
   "kpi": "KPI",
   "sor": "Observations",
+  "risk": "Risk Assessment",
+  "investigation": "Investigations",
   "permits": "Permits",
   "inspections": "Inspections",
+  "osha": "OSHA Compliance",
   "workers": "Workers",
   "training": "Training",
   "ppe": "PPE",
   "environment": "Environment",
   "community": "Community",
+  "analytics": "Analytics",
   "library": "Documents",
   "admin": "Administration",
   "settings": "Settings",
-  "help": "Help"
+  "help": "Help",
+  "users": "Users",
+  "projects": "Projects"
 }

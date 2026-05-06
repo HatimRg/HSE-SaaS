@@ -57,7 +57,7 @@ export function TopBar() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
-            placeholder={t('common.search')}
+            placeholder={t('search')}
             className="h-10 w-full rounded-lg border border-input bg-background pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
@@ -70,7 +70,7 @@ export function TopBar() {
           <button
             onClick={() => setShowLanguage(!showLanguage)}
             className="flex h-10 w-10 items-center justify-center rounded-lg hover:bg-muted transition-colors"
-            title={t('common.language')}
+            title={t('language', 'Language')}
           >
             <Languages className="h-5 w-5" />
             <span className="ml-1 text-xs font-semibold uppercase">{i18n.language}</span>
@@ -107,7 +107,7 @@ export function TopBar() {
         <button
           onClick={toggle}
           className="flex h-10 w-10 items-center justify-center rounded-lg hover:bg-muted transition-colors"
-          title={isDark ? 'Light mode' : 'Dark mode'}
+          title={isDark ? t('theme.light', 'Light mode') : t('theme.dark', 'Dark mode')}
         >
           <AnimatePresence mode="wait">
             {isDark ? (
@@ -152,7 +152,7 @@ export function TopBar() {
                 className="absolute right-0 top-full mt-2 w-80 rounded-lg border border-border bg-card shadow-lg"
               >
                 <div className="flex items-center justify-between border-b border-border p-3">
-                  <h3 className="font-semibold">{t('notifications.title')}</h3>
+                  <h3 className="font-semibold">{t('messages:notifications.title')}</h3>
                   <button
                     onClick={() => setShowNotifications(false)}
                     className="text-muted-foreground hover:text-foreground"
@@ -162,7 +162,7 @@ export function TopBar() {
                 </div>
                 <div className="max-h-64 overflow-y-auto p-2">
                   <p className="p-4 text-center text-sm text-muted-foreground">
-                    {t('notifications.noNotifications')}
+                    {t('messages:notifications.noNotifications')}
                   </p>
                 </div>
               </motion.div>
@@ -205,7 +205,7 @@ export function TopBar() {
                   className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                 >
                   <User className="h-4 w-4" />
-                  {t('common.profile')}
+                  {t('profile')}
                 </button>
                 <button
                   onClick={() => {
@@ -215,7 +215,7 @@ export function TopBar() {
                   className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                 >
                   <Settings className="h-4 w-4" />
-                  {t('common.settings')}
+                  {t('settings')}
                 </button>
                 <div className="border-t border-border" />
                 <button
@@ -223,7 +223,7 @@ export function TopBar() {
                   className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10"
                 >
                   <LogOut className="h-4 w-4" />
-                  {t('common.logout')}
+                  {t('logout')}
                 </button>
               </motion.div>
             )}

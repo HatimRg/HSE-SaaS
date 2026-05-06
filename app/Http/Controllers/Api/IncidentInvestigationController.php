@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\IncidentInvestigation;
-use App\Models\SorReport;
+use App\Models\HseEvent;
 use App\Models\Worker;
 use App\Models\Project;
 use Illuminate\Http\Request;
@@ -75,7 +75,7 @@ class IncidentInvestigationController extends BaseController
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'incident_id' => 'required|exists:sor_reports,id',
+            'incident_id' => 'required|exists:hse_events,id',
             'investigator_id' => 'required|exists:users,id',
             'team_members' => 'nullable|array',
             'team_members.*' => 'exists:users,id',
@@ -95,7 +95,7 @@ class IncidentInvestigationController extends BaseController
             'attachments.*.description' => 'required|string',
         ]);
 
-        $incident = SorReport::findOrFail($validated['incident_id']);
+        $incident = HseEvent::findOrFail($validated['incident_id']);
 
         $investigation = IncidentInvestigation::create([
             'incident_id' => $validated['incident_id'],
@@ -296,8 +296,8 @@ class IncidentInvestigationController extends BaseController
             ->limit(12);
 
         if ($projectId) {
-            $query->join('sor_reports', 'incident_investigations.incident_id', '=', 'sor_reports.id')
-                  ->where('sor_reports.project_id', $projectId);
+            $query->join('hse_events', 'incident_investigations.incident_id', '=', 'hse_events.id')
+                  ->where('hse_events.project_id', $projectId);
         }
 
         return $query->get();

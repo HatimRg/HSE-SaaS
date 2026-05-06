@@ -21,6 +21,13 @@ export default defineConfig({
       '@api': './resources/js/api',
     },
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './resources/js/test/setup.ts',
+    include: ['resources/js/**/*.test.{ts,tsx}'],
+    css: false,
+  },
   build: {
     outDir: 'public/build',
     manifest: 'manifest.json',

@@ -40,7 +40,7 @@ class WorkPermit extends BaseModel
         'attachments' => 'array',
     ];
 
-    protected $encrypted = ['hazards_identified', 'precautions_taken', 'suspension_reason'];
+    protected array $encrypted = ['hazards_identified', 'precautions_taken', 'suspension_reason'];
 
     /**
      * Get the project.

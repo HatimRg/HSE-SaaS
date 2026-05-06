@@ -36,7 +36,7 @@ class Inspection extends BaseModel
         'photos' => 'array',
     ];
 
-    protected $encrypted = ['findings', 'recommendations', 'corrective_actions'];
+    protected array $encrypted = ['findings', 'recommendations', 'corrective_actions'];
 
     /**
      * Get the project.

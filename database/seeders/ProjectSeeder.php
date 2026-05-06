@@ -63,15 +63,22 @@ class ProjectSeeder extends Seeder
         ];
 
         foreach ($projects as $data) {
-            $project = Project::create([
-                ...$data,
-                'company_id' => $company->id,
-                'manager_id' => $admin->id,
-            ]);
+            $project = Project::firstOrCreate(
+                ['code' => $data['code']],
+                [
+                    ...collect($data)->except('code')->toArray(),
+                    'company_id' => $company->id,
+                    'manager_id' => $admin?->id,
+                ]
+            );
 
-            // Assign team members
-            $project->team()->attach($admin->id, ['role_in_project' => 'Manager']);
-            $project->team()->attach($engineer->id, ['role_in_project' => 'Engineer']);
+            // Assign team members (syncWithoutDetaching to avoid duplicates)
+            if ($admin) {
+                $project->team()->syncWithoutDetaching([$admin->id => ['role_in_project' => 'Manager']]);
+            }
+            if ($engineer) {
+                $project->team()->syncWithoutDetaching([$engineer->id => ['role_in_project' => 'Engineer']]);
+            }
         }
     }
 }

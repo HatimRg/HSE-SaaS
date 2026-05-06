@@ -18,7 +18,6 @@ class SorReportSeeder extends Seeder
 
         $reports = [
             [
-                'reference' => SorReport::generateReference(),
                 'date' => now()->subDays(5),
                 'title' => 'Missing Guard Rail',
                 'description' => 'Guard rail missing on level 3 scaffolding',
@@ -29,7 +28,6 @@ class SorReportSeeder extends Seeder
                 'due_date' => now()->addDays(2),
             ],
             [
-                'reference' => SorReport::generateReference(),
                 'date' => now()->subDays(3),
                 'title' => 'Worker Without Helmet',
                 'description' => 'Worker observed without proper PPE in construction zone',
@@ -41,7 +39,6 @@ class SorReportSeeder extends Seeder
                 'completed_at' => now()->subDays(2),
             ],
             [
-                'reference' => SorReport::generateReference(),
                 'date' => now()->subDays(1),
                 'title' => 'Oil Spill',
                 'description' => 'Oil spill observed near equipment storage',
@@ -52,7 +49,6 @@ class SorReportSeeder extends Seeder
                 'due_date' => now()->addDays(3),
             ],
             [
-                'reference' => SorReport::generateReference(),
                 'date' => now()->subDays(10),
                 'title' => 'Near Miss - Falling Object',
                 'description' => 'Tool dropped from height, no injuries',
@@ -65,8 +61,14 @@ class SorReportSeeder extends Seeder
             ],
         ];
 
+        // Skip if SOR reports already exist for this project
+        if (SorReport::withTrashed()->where('project_id', $project->id)->exists()) {
+            return;
+        }
+
         foreach ($reports as $report) {
             SorReport::create([
+                'reference' => SorReport::generateReference(),
                 ...$report,
                 'company_id' => $company->id,
                 'project_id' => $project->id,

@@ -37,7 +37,7 @@ class SorReport extends BaseModel
         'attachments' => 'array',
     ];
 
-    protected $encrypted = ['description', 'corrective_action'];
+    protected array $encrypted = ['description', 'corrective_action'];
 
     /**
      * Get the project.

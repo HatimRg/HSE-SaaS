@@ -187,8 +187,8 @@ class ProjectController extends BaseController
             'workers_count' => \App\Models\DailyHeadcount::where('project_id', $project->id)
                 ->whereBetween('date', [now()->subMonth(), now()])
                 ->avg('total_count') ?? 0,
-            'kpi_reports_count' => $project->kpiReports()->count(),
-            'open_sors_count' => $project->sorReports()->whereIn('status', ['open', 'in-progress'])->count(),
+            'kpi_values_count' => $project->kpiValues()->count(),
+            'open_events_count' => $project->hseEvents()->whereIn('status', ['open', 'in_progress'])->count(),
             'active_permits_count' => $project->workPermits()
                 ->where('status', 'approved')
                 ->where('expiry_date', '>', now())

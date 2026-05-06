@@ -16,6 +16,11 @@ class KpiReportSeeder extends Seeder
         $project = Project::first();
         $user = User::where('email', 'engineer@demo.com')->first();
 
+        // Skip if KPI reports already exist for this project
+        if (KpiReport::withTrashed()->where('project_id', $project->id)->exists()) {
+            return;
+        }
+
         // Generate KPI reports for the last 6 months
         for ($i = 5; $i >= 0; $i--) {
             $weekStart = now()->subMonths($i)->startOfMonth();

@@ -79,6 +79,11 @@
   "urgent": "Urgent",
   "warning": "Attention",
   "info": "Info",
+  "language": "Langue",
+  "theme": {
+    "light": "Mode clair",
+    "dark": "Mode sombre"
+  },
   "login": {
     "title": "Connexion",
     "subtitle": "Accédez à votre tableau de bord HSE",
@@ -93,6 +98,25 @@
     "signUp": "S'inscrire",
     "invalidCredentials": "Identifiants invalides",
     "success": "Connexion réussie",
-    "demoCredentials": "Identifiants de démonstration"
+    "demoCredentials": "Identifiants de démonstration",
+    "tagline": "Santé, Sécurité, Environnement",
+    "heroTitle1": "La sécurité n'est pas",
+    "heroTitle2": "une fonctionnalité. C'est",
+    "heroTitle3": "la fondation.",
+    "heroSubtitle": "Gérez les incidents, les permis, les inspections et la conformité de tous vos projets depuis une seule plateforme.",
+    "trustedBy": "Plus de 200 équipes de sécurité nous font confiance",
+    "copyright": "© 2024 Plateforme SafeSite",
+    "switchLanguage": "Changer la langue",
+    "hseqTagline": "Santé • Sécurité • Environnement • Qualité",
+    "emailPlaceholder": "email@entreprise.com",
+    "allRightsReserved": "Tous droits réservés."
+  },
+  "record": "Enregistrer",
+  "errors": {
+    "notFoundTitle": "Page non trouvée",
+    "notFoundMessage": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "serverErrorTitle": "Erreur serveur",
+    "serverErrorMessage": "Une erreur est survenue de notre côté. Veuillez réessayer plus tard.",
+    "technicalDetail": "Détails techniques"
   }
 }

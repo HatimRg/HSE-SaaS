@@ -1250,4 +1250,161 @@ localStorage.setItem('lang', 'fr' | 'en');
 
 ---
 
+### v1.5.0 (May 2, 2026) - Schema Migration, Seeders, Observers & UI Detail
+
+#### Overview
+Completed all remaining critical gaps: seeders for new tables, notification observers, worker/training/inspection detail drawers, permit type selector, and community reports. All 20 tracked gaps now resolved.
+
+#### Backend Changes
+
+**1. Seeders Created**
+- `PermitTypeSeeder` — 7 permit types (Hot Work, Confined Space, Electrical, Excavation, Working at Height, Lifting, Chemical) with safety measures and PPE requirements
+- `InspectionTemplateSeeder` — 4 templates (General Safety, Equipment, Vehicle, Scaffolding) with 8-10 checklist items each including weights and categories
+- `HazardSeeder` — 16 hazards across 6 categories (physical, chemical, biological, ergonomic, environmental, electrical) with default control measures
+- `WorkerDataSeeder` — 12 worker documents (medical, certification, training, competency) with expiry tracking + 8 training participants with scores/results
+- `DatabaseSeeder` updated with all new seeders
+
+**2. Notification Observers**
+- `HseEventObserver` — Notifies assigned user on creation; notifies safety managers for critical/high events; notifies reporter on status change; escalates overdue events
+- `EnvironmentalReadingObserver` — Notifies safety managers and environmental officers on threshold exceedance
+- `WorkPermitObserver` — Notifies approvers on new permit; notifies requester on approval/rejection; warns about expiring permits
+- `WorkerDocumentObserver` — Notifies supervisors on new document; warns about expiring documents
+- All observers registered in `AppServiceProvider::boot()`
+
+**3. Artisan Commands (from v1.4)**
+- `kpi:compute` — Computes KPI values per project/period
+- `migrate:sor-to-hse-events` — Migrates legacy sor_reports to hse_events
+- Scheduler: `kpi:compute --period=month` daily at 01:00
+
+#### Frontend Changes
+
+**1. Workers Page — Detail Drawer**
+- Clickable rows open right-side drawer with 4 tabs:
+  - **Documents**: Lists worker documents with status badges (valid/expiring/expired), issuer, issue/expiry dates
+  - **PPE**: Lists PPE issues with quantity, size, issue/return dates
+  - **Sanctions**: Lists sanctions with type, severity, status, date
+  - **Assignments**: Lists project assignments with role, status, date range
+
+**2. Training Page — Participants Drawer**
+- Clickable rows open right-side drawer showing:
+  - Participant name, attendance status (attended/absent/excused)
+  - Score and result (pass/fail) with color-coded badges
+  - Feedback text
+
+**3. Permits Page — Dynamic Type Selector**
+- Fetches permit types from `/permit-types` API
+- Populates dropdown dynamically with seeded types
+- Falls back to hardcoded options if API unavailable
+
+**4. Inspections Page — Checklist Detail Drawer**
+- Clickable rows open right-side drawer showing:
+  - Score and result summary
+  - Checklist items with status icons (conform/non_conform/na)
+  - Non-conform items highlighted with red border
+  - Notes and severity per item
+
+**5. Community Page — Report Functionality**
+- Report dropdown on each post (Flag icon)
+- Report reasons: Inappropriate, Spam
+- Mutation to `/community/{id}/reports` endpoint
+- Fixed `useTranslation` hook missing in PostCard component
+
+#### Files Created
+- `database/seeders/PermitTypeSeeder.php`
+- `database/seeders/InspectionTemplateSeeder.php`
+- `database/seeders/HazardSeeder.php`
+- `database/seeders/WorkerDataSeeder.php`
+- `app/Observers/HseEventObserver.php`
+- `app/Observers/EnvironmentalReadingObserver.php`
+- `app/Observers/WorkPermitObserver.php`
+- `app/Observers/WorkerDocumentObserver.php`
+- `app/Console/Commands/MigrateSorToHseEvents.php`
+- `app/Console/Commands/ComputeKpis.php`
+
+#### Files Modified
+- `database/seeders/DatabaseSeeder.php` — Added 4 new seeders
+- `app/Providers/AppServiceProvider.php` — Registered 4 observers
+- `app/Console/Kernel.php` — Added KPI computation scheduler
+- `resources/js/pages/workers.tsx` — Detail drawer with 4 tabs
+- `resources/js/pages/training.tsx` — Participants drawer
+- `resources/js/pages/permits.tsx` — Dynamic type selector from API
+- `resources/js/pages/inspections.tsx` — Checklist detail drawer
+- `resources/js/pages/community.tsx` — Report dropdown + useTranslation fix
+- `resources/js/pages/sor.tsx` — /hse-events API migration
+- `resources/js/pages/kpi.tsx` — Computed KPI dashboard
+- `resources/js/pages/settings.tsx` — Full implementation
+- `APP_KNOWLEDGE_BASE.md` — 20 gaps resolved
+- `DATA_AUDIT.md` — Updated data point linkages
+
+#### Remaining Gaps (Medium Priority)
+- Audit log integration for new tables
+- CSV/PDF export for new modules
+- Backend SorReport/KpiReport references should migrate to HseEvent/KpiValue
+
+---
+
+### Session 5 — i18n Audit & Test Suite (May 2, 2026)
+
+**1. Full i18n Internationalization Audit**
+- Systematically audited all frontend pages for hardcoded strings
+- Fixed all un-namespaced `t()` calls (e.g., `t('title')` → `t('modules:kpi.title')`)
+- Replaced hardcoded UI strings with proper `t()` calls across:
+  - KPI page: descriptions, placeholders, compute button text
+  - Library page: "No documents found", "Generate QR Code"
+  - SOR, risk-assessment, inspections, workers, environment pages
+  - Error page, profile page
+- Added missing translation keys to EN and FR locale files:
+  - `modules.json`: `computeDesc`, `autoComputeDesc`, `projectId`, `noDocumentsDesc`, `generateQr`
+- All pages now use namespaced keys (`common:`, `modules:`, `navigation:`, `messages:`, `dashboard:`)
+
+**2. Test Suite Setup (Vitest + React Testing Library)**
+- Installed: `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `jsdom`
+- Configured Vitest in `vite.config.ts` with jsdom environment
+- Created `resources/js/test/setup.ts` with global mocks:
+  - `react-i18next` (useTranslation, I18nextProvider, Trans)
+  - `@tanstack/react-query` (useQuery, useMutation, useQueryClient)
+  - `framer-motion` (motion proxy, AnimatePresence, LayoutGroup)
+  - `react-hot-toast`
+  - Auth provider, theme provider, API module
+  - `react-router-dom`, browser APIs (matchMedia, IntersectionObserver)
+- Created `resources/js/test/app.test.tsx` (27 tests):
+  - i18n Translation Keys: EN/FR common, modules, navigation parity checks
+  - Page Components: Settings, Profile, Login rendering tests
+  - Shared Components: EmptyState, Modal (render + interaction)
+  - API Module: axios instance export verification
+  - i18n Runtime: EN/FR translation, fallback behavior
+- Created `resources/js/test/pages.test.tsx` (19 tests):
+  - Page Smoke Tests: 15 pages render without crashing
+  - Modal Interactions: Settings tab toggling
+  - API Module Methods: get/post/delete callable verification
+
+**3. Bug Fixes Discovered via Testing**
+- Fixed `LucideIcon` type error in `projects.tsx` and `kpi.tsx`:
+  - `icon={FolderKanban}` → `icon={<FolderKanban className="h-8 w-8" />}`
+  - `icon={BarChart3}` → `icon={<BarChart3 className="h-8 w-8" />}`
+- Removed `console.log`/`console.error` debug statements from:
+  - `risk-assessment.tsx` (onEdit/onDelete handlers)
+  - `library.tsx` (QR code, download, folder/document handlers)
+
+**4. Codebase Cleanup**
+- Removed unused `useTranslation` import from test file
+- Replaced all `console.log` stub handlers with empty functions `() => {}`
+
+#### Files Created
+- `resources/js/test/setup.ts`
+- `resources/js/test/app.test.tsx`
+- `resources/js/test/pages.test.tsx`
+
+#### Files Modified
+- `vite.config.ts` — Added Vitest configuration
+- `package.json` — Added test/test:watch scripts
+- `resources/js/locales/en/modules.json` — Added missing KPI/library keys
+- `resources/js/locales/fr/modules.json` — Added missing KPI/library keys
+- `resources/js/pages/kpi.tsx` — i18n keys + LucideIcon fix
+- `resources/js/pages/library.tsx` — i18n keys + console.log cleanup
+- `resources/js/pages/projects.tsx` — LucideIcon fix
+- `resources/js/pages/risk-assessment.tsx` — console.log cleanup
+
+---
+
 **End of Implementation Record**

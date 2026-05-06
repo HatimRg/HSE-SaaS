@@ -77,7 +77,7 @@ export default function LoginPage() {
           <button
             onClick={() => setShowLangMenu(!showLangMenu)}
             className="flex h-10 items-center gap-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 px-3 text-foreground hover:bg-white/20 transition-all"
-            title="Switch language"
+            title={t('common.switchLanguage')}
           >
             <Languages className="h-5 w-5" />
             <span className="text-sm font-medium">{i18n.language.toUpperCase()}</span>
@@ -177,7 +177,7 @@ export default function LoginPage() {
           </motion.div>
           <h1 className="text-4xl font-bold font-login tracking-wide text-white">{t('common.appName')}</h1>
           <p className="mt-2 text-sm text-muted-foreground font-login tracking-wider uppercase">
-            Health • Safety • Environment • Quality
+            {t('common.hseqTagline')}
           </p>
         </div>
 
@@ -213,7 +213,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground placeholder:text-muted-foreground"
-                placeholder="email@company.com"
+                placeholder={t('common.emailPlaceholder')}
               />
             </div>
 
@@ -286,7 +286,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-4 text-center text-xs text-muted-foreground">
-            <p>Demo credentials:</p>
+            <p>{t('common.demoCredentials')}:</p>
             <p>admin@demo.com / password</p>
             <p>engineer@demo.com / password</p>
           </div>
@@ -299,7 +299,7 @@ export default function LoginPage() {
           transition={{ delay: 0.5 }}
           className="mt-8 text-center text-xs text-muted-foreground"
         >
-          © 2024 SafeSite Platform. All rights reserved.
+          © 2024 SafeSite Platform. {t('common.allRightsReserved')}
         </motion.p>
       </motion.div>
     </div>

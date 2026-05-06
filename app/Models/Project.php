@@ -57,7 +57,7 @@ class Project extends BaseModel
     }
 
     /**
-     * Get KPI reports.
+     * Get KPI reports (deprecated, use kpiValues).
      */
     public function kpiReports(): HasMany
     {
@@ -65,11 +65,27 @@ class Project extends BaseModel
     }
 
     /**
-     * Get SOR reports.
+     * Get KPI values (computed).
+     */
+    public function kpiValues(): HasMany
+    {
+        return $this->hasMany(KpiValue::class);
+    }
+
+    /**
+     * Get SOR reports (deprecated, use hseEvents).
      */
     public function sorReports(): HasMany
     {
         return $this->hasMany(SorReport::class);
+    }
+
+    /**
+     * Get HSE events (unified, replaces sorReports).
+     */
+    public function hseEvents(): HasMany
+    {
+        return $this->hasMany(HseEvent::class);
     }
 
     /**

@@ -18,6 +18,7 @@ import {
   Users,
   MoreHorizontal,
   Pin,
+  Flag,
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { EmptyState } from '../components/empty-state';
@@ -116,9 +117,9 @@ export default function CommunityPage() {
         className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
       >
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Community</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('navigation:community')}</h1>
           <p className="text-muted-foreground">
-            Connect with your team and share experiences
+            {t('modules:community.subtitle', 'Connect with your team and share experiences')}
           </p>
         </div>
 
@@ -128,7 +129,7 @@ export default function CommunityPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search posts..."
+              placeholder={t('modules:community.search', 'Search posts...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-4 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
@@ -141,7 +142,7 @@ export default function CommunityPage() {
             className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            New Post
+            {t('modules:community.newPost', 'New Post')}
           </button>
         </div>
       </motion.div>
@@ -159,7 +160,7 @@ export default function CommunityPage() {
               <textarea
                 value={newPost}
                 onChange={(e) => setNewPost(e.target.value)}
-                placeholder="Share your thoughts, experiences, or ask questions..."
+                placeholder={t('modules:community.postPlaceholder', 'Share your thoughts, experiences, or ask questions...')}
                 className="w-full p-4 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary bg-background"
                 rows={4}
               />
@@ -176,14 +177,14 @@ export default function CommunityPage() {
                     onClick={() => setShowCreatePost(false)}
                     className="px-4 py-2 text-muted-foreground hover:bg-muted rounded-lg"
                   >
-                    Cancel
+                    {t('common:cancel')}
                   </button>
                   <button
                     onClick={handleCreatePost}
                     disabled={!newPost.trim() || createPostMutation.isPending}
                     className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"
                   >
-                    {createPostMutation.isPending ? 'Posting...' : 'Post'}
+                    {createPostMutation.isPending ? t('modules:community.posting', 'Posting...') : t('modules:community.post', 'Post')}
                   </button>
                 </div>
               </div>
@@ -205,8 +206,8 @@ export default function CommunityPage() {
               ))
             ) : (
               <EmptyState
-                title="No posts yet"
-                description="Be the first to share something with the community"
+                title={t('messages:empty.title')}
+                description={t('modules:community.noPosts', 'Be the first to share something with the community')}
               />
             )}
           </div>
@@ -218,7 +219,7 @@ export default function CommunityPage() {
           <div className="rounded-xl border border-border bg-card p-6">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              Trending Topics
+              {t('modules:community.trendingTopics', 'Trending Topics')}
             </h3>
             {trendingHashtags?.length > 0 ? (
               <div className="space-y-2">
@@ -239,7 +240,7 @@ export default function CommunityPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No trending topics yet</p>
+              <p className="text-sm text-muted-foreground">{t('modules:community.noTrending', 'No trending topics yet')}</p>
             )}
           </div>
 
@@ -247,19 +248,19 @@ export default function CommunityPage() {
           <div className="rounded-xl border border-border bg-card p-6">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Community Stats
+              {t('modules:community.communityStats', 'Community Stats')}
             </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Total Posts</span>
+                <span className="text-sm text-muted-foreground">{t('modules:community.totalPosts', 'Total Posts')}</span>
                 <span className="font-semibold">{posts?.total || 0}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Active Members</span>
-                <span className="font-semibold">42</span>
+                <span className="text-sm text-muted-foreground">{t('modules:community.activeMembers', 'Active Members')}</span>
+                <span className="font-semibold">{posts?.active_members || 0}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">This Week</span>
+                <span className="text-sm text-muted-foreground">{t('modules:community.thisWeek', 'This Week')}</span>
                 <span className="font-semibold">{posts?.this_week || 0}</span>
               </div>
             </div>
@@ -272,8 +273,20 @@ export default function CommunityPage() {
 
 // Post Card Component
 function PostCard({ post, onComment, onReaction }: any) {
+  const { t } = useTranslation();
   const [commentText, setCommentText] = useState('');
   const [showComments, setShowComments] = useState(false);
+  const [showReportMenu, setShowReportMenu] = useState(false);
+
+  const reportMutation = useMutation({
+    mutationFn: async ({ postId, reason }: { postId: number; reason: string }) => {
+      const response = await api.post(`/community/${postId}/reports`, { reason });
+      return response.data.data;
+    },
+    onSuccess: () => {
+      setShowReportMenu(false);
+    },
+  });
 
   const reactions = [
     { type: 'like', icon: ThumbsUp, color: 'text-blue-500' },
@@ -321,9 +334,29 @@ function PostCard({ post, onComment, onReaction }: any) {
             </div>
           </div>
           
-          <button className="p-1 rounded hover:bg-muted">
-            <MoreHorizontal className="h-4 w-4" />
-          </button>
+          <div className="relative">
+            <button onClick={() => setShowReportMenu(!showReportMenu)} className="p-1 rounded hover:bg-muted">
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+            {showReportMenu && (
+              <div className="absolute right-0 top-8 z-10 rounded-lg border border-border bg-card shadow-lg py-1 min-w-[160px]">
+                <button
+                  onClick={() => reportMutation.mutate({ postId: post.id, reason: 'inappropriate' })}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-muted"
+                >
+                  <Flag className="h-3.5 w-3.5" />
+                  {t('modules:community.reportInappropriate', 'Report inappropriate')}
+                </button>
+                <button
+                  onClick={() => reportMutation.mutate({ postId: post.id, reason: 'spam' })}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-muted"
+                >
+                  <Flag className="h-3.5 w-3.5" />
+                  {t('modules:community.reportSpam', 'Report spam')}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Post Content */}
@@ -414,7 +447,7 @@ function PostCard({ post, onComment, onReaction }: any) {
                   type="text"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
-                  placeholder="Add a comment..."
+                  placeholder={t('modules:community.addComment', 'Add a comment...')}
                   className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
                   onKeyPress={(e) => e.key === 'Enter' && handleComment()}
                 />
@@ -451,7 +484,7 @@ function PostCard({ post, onComment, onReaction }: any) {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  No comments yet. Be the first to comment!
+                  {t('modules:community.noComments', 'No comments yet. Be the first to comment!')}
                 </p>
               )}
             </div>

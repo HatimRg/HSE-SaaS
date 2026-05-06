@@ -21,6 +21,10 @@ use App\Http\Controllers\Api\RiskAssessmentController;
 use App\Http\Controllers\Api\IncidentInvestigationController;
 use App\Http\Controllers\Api\ImportExportController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\HseEventController;
+use App\Http\Controllers\Api\EventActionController;
+use App\Http\Controllers\Api\EnvironmentController;
+use App\Http\Controllers\Api\KpiEngineController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -51,7 +55,7 @@ Route::middleware(['auth:sanctum', 'tenant', 'security.headers'])->group(functio
     Route::get('/analytics/risk-matrix', [AnalyticsController::class, 'riskMatrix']);
     Route::get('/analytics/compliance', [AnalyticsController::class, 'compliance']);
     
-    // KPI Reports
+    // KPI Reports (deprecated, use /kpi/* routes below)
     Route::get('/kpi-reports', [KpiReportController::class, 'index']);
     Route::get('/kpi-reports/summary', [KpiReportController::class, 'summary']);
     Route::post('/kpi-reports', [KpiReportController::class, 'store']);
@@ -62,7 +66,7 @@ Route::middleware(['auth:sanctum', 'tenant', 'security.headers'])->group(functio
     Route::post('/kpi-reports/{id}/approve', [KpiReportController::class, 'approve']);
     Route::post('/kpi-reports/{id}/reject', [KpiReportController::class, 'reject']);
     
-    // SOR Reports
+    // SOR Reports (deprecated, use /hse-events routes below)
     Route::get('/sor-reports', [SorReportController::class, 'index']);
     Route::post('/sor-reports', [SorReportController::class, 'store']);
     Route::get('/sor-reports/{id}', [SorReportController::class, 'show']);
@@ -214,12 +218,49 @@ Route::middleware(['auth:sanctum', 'tenant', 'security.headers'])->group(functio
     
     // Import/Export
     Route::post('/import/workers', [ImportExportController::class, 'importWorkers'])->middleware('throttle:import');
-    Route::get('/export/kpi-reports', [ImportExportController::class, 'exportKpiReports'])->middleware('throttle:export');
+    Route::get('/export/kpi-values', [ImportExportController::class, 'exportKpiReports'])->middleware('throttle:export');
     Route::get('/export/workers', [ImportExportController::class, 'exportWorkers'])->middleware('throttle:export');
-    Route::get('/export/sor-reports', [ImportExportController::class, 'exportSorReports'])->middleware('throttle:export');
+    Route::get('/export/hse-events', [ImportExportController::class, 'exportHseEvents'])->middleware('throttle:export');
     Route::get('/export/inspections', [ImportExportController::class, 'exportInspections'])->middleware('throttle:export');
     Route::get('/export/work-permits', [ImportExportController::class, 'exportWorkPermits'])->middleware('throttle:export');
-    
+    Route::get('/export/event-actions', [ImportExportController::class, 'exportEventActions'])->middleware('throttle:export');
+    Route::get('/export/environmental-readings', [ImportExportController::class, 'exportEnvironmentalReadings'])->middleware('throttle:export');
+    Route::get('/export/waste-exports', [ImportExportController::class, 'exportWasteExports'])->middleware('throttle:export');
+    Route::get('/export/risk-assessments', [ImportExportController::class, 'exportRiskAssessments'])->middleware('throttle:export');
+    Route::get('/export/worker-documents', [ImportExportController::class, 'exportWorkerDocuments'])->middleware('throttle:export');
+    Route::get('/export/hse-events/pdf', [ImportExportController::class, 'generateHseEventsPdf'])->middleware('throttle:export');
+    Route::get('/export/risk-assessments/{id}/pdf', [ImportExportController::class, 'generateRiskAssessmentPdf'])->middleware('throttle:export');
+
+    // HSE Events (unified, replaces sor-reports)
+    Route::get('/hse-events', [HseEventController::class, 'index']);
+    Route::post('/hse-events', [HseEventController::class, 'store']);
+    Route::get('/hse-events/{hseEvent}', [HseEventController::class, 'show']);
+    Route::put('/hse-events/{hseEvent}', [HseEventController::class, 'update']);
+    Route::delete('/hse-events/{hseEvent}', [HseEventController::class, 'destroy']);
+    Route::post('/hse-events/{hseEvent}/actions', [HseEventController::class, 'addAction']);
+    Route::get('/hse-events/stats', [HseEventController::class, 'stats']);
+
+    // Event Actions (shared corrective/preventive)
+    Route::get('/event-actions', [EventActionController::class, 'index']);
+    Route::get('/event-actions/{eventAction}', [EventActionController::class, 'show']);
+    Route::put('/event-actions/{eventAction}', [EventActionController::class, 'update']);
+    Route::delete('/event-actions/{eventAction}', [EventActionController::class, 'destroy']);
+    Route::get('/event-actions/stats', [EventActionController::class, 'stats']);
+
+    // Environment
+    Route::get('/environment', [EnvironmentController::class, 'index']);
+    Route::get('/environment/readings', [EnvironmentController::class, 'readings']);
+    Route::post('/environment/readings', [EnvironmentController::class, 'storeReading']);
+    Route::get('/environment/waste', [EnvironmentController::class, 'wasteExports']);
+    Route::post('/environment/waste', [EnvironmentController::class, 'storeWasteExport']);
+    Route::get('/environment/charts', [EnvironmentController::class, 'charts']);
+
+    // KPI Engine (computed, replaces manual kpi-reports)
+    Route::get('/kpi/definitions', [KpiEngineController::class, 'definitions']);
+    Route::get('/kpi/values', [KpiEngineController::class, 'values']);
+    Route::post('/kpi/compute', [KpiEngineController::class, 'compute']);
+    Route::get('/kpi/dashboard', [KpiEngineController::class, 'dashboard']);
+
     // Health check
     Route::get('/health', function () {
         return response()->json([

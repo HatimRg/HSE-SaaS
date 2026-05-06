@@ -20,12 +20,17 @@ api.interceptors.request.use(
     }
 
     // Add company ID header for tenant identification
-    const user = localStorage.getItem('user');
-    if (user) {
-      const parsed = JSON.parse(user);
-      if (parsed?.company?.id) {
-        config.headers['X-Company-ID'] = parsed.company.id;
+    try {
+      const user = localStorage.getItem('user');
+      if (user) {
+        const parsed = JSON.parse(user);
+        if (parsed?.company?.id) {
+          config.headers['X-Company-ID'] = parsed.company.id;
+        }
       }
+    } catch {
+      // Corrupt user data in localStorage — remove it silently
+      localStorage.removeItem('user');
     }
 
     return config;

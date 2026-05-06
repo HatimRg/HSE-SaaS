@@ -5,10 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class RiskAssessment extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['title', 'status', 'risk_level'])
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn(string $eventName) => "Risk assessment has been {$eventName}");
+    }
 
     protected $fillable = [
         'company_id',
@@ -53,6 +63,11 @@ class RiskAssessment extends Model
     public function assessor()
     {
         return $this->belongsTo(User::class, 'assessor_id');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(RiskItem::class);
     }
 
     public function mitigationMeasures()

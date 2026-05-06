@@ -83,18 +83,16 @@ export default function LibraryPage() {
       a.download = response.headers['content-disposition']?.split('filename=')[1] || 'document';
       a.click();
       window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Download failed:', error);
+    } catch {
+      // Download failed
     }
   };
 
   const handleGenerateQrCode = async (documentId: number) => {
     try {
-      const response = await api.post(`/library/documents/${documentId}/generate-qr`);
-      // Handle QR code generation
-      console.log('QR Code generated:', response.data);
-    } catch (error) {
-      console.error('QR Code generation failed:', error);
+      await api.post(`/library/documents/${documentId}/generate-qr`);
+    } catch {
+      // QR code generation failed silently
     }
   };
 
@@ -107,9 +105,9 @@ export default function LibraryPage() {
         className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
       >
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Document Library</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('modules:library.title')}</h1>
           <p className="text-muted-foreground">
-            Manage and organize your HSE documents
+            {t('modules:library.subtitle')}
           </p>
         </div>
 
@@ -119,7 +117,7 @@ export default function LibraryPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search documents..."
+              placeholder={t('modules:library.search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-4 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
@@ -149,14 +147,14 @@ export default function LibraryPage() {
               className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted"
             >
               <FolderPlus className="h-4 w-4" />
-              New Folder
+              {t('modules:library.newFolder')}
             </button>
             <button
               onClick={() => setShowUploadModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
             >
               <Upload className="h-4 w-4" />
-              Upload
+              {t('modules:library.upload')}
             </button>
           </div>
         </div>
@@ -202,8 +200,8 @@ export default function LibraryPage() {
                         key={folder.id}
                         folder={folder}
                         onSelect={() => setSelectedFolder(folder.id)}
-                        onEdit={() => console.log('Edit folder:', folder.id)}
-                        onDelete={() => console.log('Delete folder:', folder.id)}
+                        onEdit={() => {}}
+                        onDelete={() => {}}
                       />
                     ))}
                   </div>
@@ -214,8 +212,8 @@ export default function LibraryPage() {
                         key={folder.id}
                         folder={folder}
                         onSelect={() => setSelectedFolder(folder.id)}
-                        onEdit={() => console.log('Edit folder:', folder.id)}
-                        onDelete={() => console.log('Delete folder:', folder.id)}
+                        onEdit={() => {}}
+                        onDelete={() => {}}
                       />
                     ))}
                   </div>
@@ -234,9 +232,9 @@ export default function LibraryPage() {
                         key={document.id}
                         document={document}
                         onDownload={() => handleDownload(document.id)}
-                        onView={() => console.log('View document:', document.id)}
-                        onEdit={() => console.log('Edit document:', document.id)}
-                        onDelete={() => console.log('Delete document:', document.id)}
+                        onView={() => {}}
+                        onEdit={() => {}}
+                        onDelete={() => {}}
                         onGenerateQr={() => handleGenerateQrCode(document.id)}
                       />
                     ))}
@@ -248,9 +246,9 @@ export default function LibraryPage() {
                         key={document.id}
                         document={document}
                         onDownload={() => handleDownload(document.id)}
-                        onView={() => console.log('View document:', document.id)}
-                        onEdit={() => console.log('Edit document:', document.id)}
-                        onDelete={() => console.log('Delete document:', document.id)}
+                        onView={() => {}}
+                        onEdit={() => {}}
+                        onDelete={() => {}}
                         onGenerateQr={() => handleGenerateQrCode(document.id)}
                       />
                     ))}
@@ -262,8 +260,8 @@ export default function LibraryPage() {
             {/* Empty State */}
             {(!libraryData?.folders?.length && !libraryData?.documents?.data?.length) && (
               <EmptyState
-                title="No documents found"
-                description="Upload your first document or create a folder to get started"
+                title={t('modules:library.noDocuments', 'No documents found')}
+                description={t('modules:library.noDocumentsDesc', 'Upload your first document or create a folder to get started')}
               />
             )}
           </>
@@ -283,7 +281,7 @@ export default function LibraryPage() {
       {showNewFolderModal && (
         <NewFolderModal
           onClose={() => setShowNewFolderModal(false)}
-          onCreate={(name) => console.log('Create folder:', name)}
+          onCreate={() => {}}
         />
       )}
     </div>
@@ -337,6 +335,7 @@ function FolderCard({ folder, onSelect, onEdit, onDelete }: any) {
 
 // Document Card Component
 function DocumentCard({ document, onDownload, onView, onEdit, onDelete, onGenerateQr }: any) {
+  const { t } = useTranslation();
   const getDocumentIcon = (type: string) => {
     switch (type) {
       case 'pdf': return '📄';
@@ -362,7 +361,7 @@ function DocumentCard({ document, onDownload, onView, onEdit, onDelete, onGenera
             <button
               onClick={onGenerateQr}
               className="p-1 rounded hover:bg-muted"
-              title="Generate QR Code"
+              title={t('modules:library.generateQr', 'Generate QR Code')}
             >
               <QrCode className="h-4 w-4" />
             </button>
@@ -517,6 +516,7 @@ function DocumentListItem({ document, onDownload, onView, onEdit, onDelete, onGe
 
 // Upload Modal Component
 function UploadModal({ onClose, onUpload, selectedFolder }: any) {
+  const { t } = useTranslation();
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<FileList | null>(null);
 
@@ -591,14 +591,14 @@ function UploadModal({ onClose, onUpload, selectedFolder }: any) {
             onClick={onClose}
             className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted"
           >
-            Cancel
+            {t('common:cancel')}
           </button>
           <button
             onClick={handleSubmit}
             disabled={!files}
             className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"
           >
-            Upload
+            {t('modules:library.upload')}
           </button>
         </div>
       </motion.div>
@@ -608,6 +608,7 @@ function UploadModal({ onClose, onUpload, selectedFolder }: any) {
 
 // New Folder Modal Component
 function NewFolderModal({ onClose, onCreate }: { onClose: () => void; onCreate: (name: string, description: string) => void }) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
@@ -625,27 +626,27 @@ function NewFolderModal({ onClose, onCreate }: { onClose: () => void; onCreate: 
         animate={{ opacity: 1, scale: 1 }}
         className="bg-card rounded-xl p-6 max-w-md w-full mx-4"
       >
-        <h2 className="text-xl font-semibold mb-4">Create New Folder</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('modules:library.createFolder')}</h2>
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Folder Name</label>
+            <label className="block text-sm font-medium mb-2">{t('modules:library.folderName')}</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Enter folder name"
+              placeholder={t('modules:library.enterFolderName')}
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-2">Description (Optional)</label>
+            <label className="block text-sm font-medium mb-2">{t('modules:library.descriptionOptional')}</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Enter folder description"
+              placeholder={t('modules:library.enterFolderDescription')}
               rows={3}
             />
           </div>
@@ -656,14 +657,14 @@ function NewFolderModal({ onClose, onCreate }: { onClose: () => void; onCreate: 
             onClick={onClose}
             className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted"
           >
-            Cancel
+            {t('common:cancel')}
           </button>
           <button
             onClick={handleSubmit}
             disabled={!name.trim()}
             className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"
           >
-            Create
+            {t('common:create')}
           </button>
         </div>
       </motion.div>

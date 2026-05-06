@@ -41,7 +41,7 @@ class Worker extends BaseModel
         'badges' => 'array',
     ];
 
-    protected $encrypted = ['address', 'medical_notes', 'emergency_contact_phone'];
+    protected array $encrypted = ['address', 'medical_notes', 'emergency_contact_phone'];
 
     /**
      * Get the company.

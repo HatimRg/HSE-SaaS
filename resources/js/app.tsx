@@ -1,6 +1,6 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, useLocation, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster, toast } from 'react-hot-toast';
 import { Sun, Moon, Languages, Shield } from 'lucide-react';
@@ -33,6 +33,10 @@ import CommunityPage from './pages/community';
 import SettingsPage from './pages/settings';
 import ProfilePage from './pages/profile';
 import NotFoundPage from './pages/not-found';
+import ErrorPage from './pages/error';
+import EnvironmentPage from './pages/environment';
+import UsersPage from './pages/users';
+import ProjectsPage from './pages/projects';
 
 // Create optimized QueryClient with performance settings
 const queryClient = new QueryClient({
@@ -61,6 +65,24 @@ function AppLoading() {
   );
 }
 
+// Page transition wrapper
+function AnimatedOutlet() {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.15 }}
+      >
+        <Outlet />
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 // Main layout with Sidebar and TopBar
 function MainLayout() {
   return (
@@ -69,7 +91,7 @@ function MainLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar />
         <main className="flex-1 overflow-y-auto p-6 max-w-[1600px] w-full mx-auto">
-          <Outlet />
+          <AnimatedOutlet />
         </main>
       </div>
     </div>
@@ -138,16 +160,16 @@ function LoginPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
               <Shield className="h-6 w-6 text-white" />
             </div>
-            <span className="text-white text-xl font-bold tracking-tight">SafeSite</span>
+            <span className="text-white text-xl font-bold tracking-tight">{t('appName')}</span>
           </div>
         </div>
 
         <div className="relative z-10">
           <h1 className="text-4xl font-extrabold text-white leading-tight mb-4" style={{ letterSpacing: '-0.03em' }}>
-            Safety is not<br />a feature. It is<br />the foundation.
+            {t('login.heroTitle1')}<br />{t('login.heroTitle2')}<br />{t('login.heroTitle3')}
           </h1>
           <p className="text-white/70 text-lg max-w-md leading-relaxed">
-            Manage incidents, permits, inspections, and compliance across all your projects from one platform.
+            {t('login.heroSubtitle')}
           </p>
         </div>
 
@@ -159,7 +181,7 @@ function LoginPage() {
               </div>
             ))}
           </div>
-          <p className="text-white/60 text-sm">Trusted by 200+ safety teams worldwide</p>
+          <p className="text-white/60 text-sm">{t('login.trustedBy')}</p>
         </div>
       </div>
 
@@ -171,7 +193,7 @@ function LoginPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Shield className="h-5 w-5" />
             </div>
-            <span className="font-bold text-lg">{t('common.appName')}</span>
+            <span className="font-bold text-lg">{t('appName')}</span>
           </div>
           <div className="flex items-center gap-2 ml-auto">
             <button
@@ -179,7 +201,7 @@ function LoginPage() {
                 toggle();
               }}
               className="flex h-9 w-9 items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
-              title={isDark ? 'Light Mode' : 'Dark Mode'}
+              title={isDark ? t('theme.light', 'Light Mode') : t('theme.dark', 'Dark Mode')}
             >
               <AnimatePresence mode="wait" initial={false}>
                 {isDark ? (
@@ -227,8 +249,8 @@ function LoginPage() {
           <div className="w-full max-w-sm">
             {/* Mobile-only brand */}
             <div className="lg:hidden mb-8 text-center">
-              <h1 className="text-3xl font-extrabold tracking-tight">{t('common.appName')}</h1>
-              <p className="text-muted-foreground text-sm mt-1">Health, Safety, Environment</p>
+              <h1 className="text-3xl font-extrabold tracking-tight">{t('appName')}</h1>
+              <p className="text-muted-foreground text-sm mt-1">{t('login.tagline')}</p>
             </div>
 
             <div className="mb-8">
@@ -307,29 +329,29 @@ function LoginPage() {
 
             {/* Demo credentials */}
             <div className="mt-8 pt-6 border-t border-border">
-              <p className="text-xs font-medium text-muted-foreground mb-3">Quick access</p>
+              <p className="text-xs font-medium text-muted-foreground mb-3">{t('login.demoCredentials')}</p>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail('admin@example.com');
-                    setPassword('password');
+                    setEmail('admin@hse-saas.com');
+                    setPassword('Admin123!');
                   }}
                   className="text-left text-xs p-3 rounded-lg border border-border hover:bg-muted transition-colors"
                 >
                   <span className="font-semibold text-foreground block">Admin</span>
-                  <span className="text-muted-foreground">admin@example.com</span>
+                  <span className="text-muted-foreground">admin@hse-saas.com</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail('engineer@example.com');
-                    setPassword('password');
+                    setEmail('superadmin@hse-saas.com');
+                    setPassword('SuperAdmin123!');
                   }}
                   className="text-left text-xs p-3 rounded-lg border border-border hover:bg-muted transition-colors"
                 >
-                  <span className="font-semibold text-foreground block">Engineer</span>
-                  <span className="text-muted-foreground">engineer@example.com</span>
+                  <span className="font-semibold text-foreground block">Super Admin</span>
+                  <span className="text-muted-foreground">superadmin@hse-saas.com</span>
                 </button>
               </div>
             </div>
@@ -338,8 +360,88 @@ function LoginPage() {
 
         {/* Footer */}
         <div className="p-4 text-center">
-          <p className="text-xs text-muted-foreground">&copy; 2024 SafeSite Platform</p>
+          <p className="text-xs text-muted-foreground">{t('login.copyright')}</p>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Route guard: redirect to login if not authenticated
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return <AppLoading />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+}
+
+// Safety: reset body overflow on route change to prevent stuck overlays
+function BodyOverflowReset() {
+  const location = useLocation();
+  useEffect(() => {
+    // Small delay to let modal exit animations complete
+    const timer = setTimeout(() => {
+      if (!document.querySelector('[data-modal-open]')) {
+        document.body.style.overflow = '';
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+  return null;
+}
+
+// Change Password Page (for forced password changes)
+function ChangePasswordPage() {
+  const { t } = useTranslation();
+  const { user, changePassword } = useAuth();
+  const [form, setForm] = useState({ current_password: '', new_password: '', new_password_confirmation: '' });
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (form.new_password !== form.new_password_confirmation) {
+      setError(t('messages:errors.passwordMismatch', 'Passwords do not match'));
+      return;
+    }
+    try {
+      await changePassword(form.current_password, form.new_password);
+    } catch (err: any) {
+      setError(err.response?.data?.message || t('messages:errors.generic', 'Failed to change password'));
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center p-4 bg-background">
+      <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 shadow-lg">
+        <h1 className="text-2xl font-bold mb-2">{t('modules:settings.changePassword', 'Change Password')}</h1>
+        <p className="text-muted-foreground mb-6">{t('modules:settings.passwordRequired', 'You must change your password before continuing.')}</p>
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">{t('modules:settings.currentPassword', 'Current Password')}</label>
+            <input type="password" value={form.current_password} onChange={e => setForm({ ...form, current_password: e.target.value })} required className="w-full rounded-lg border border-border bg-background px-3 py-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">{t('modules:settings.newPassword', 'New Password')}</label>
+            <input type="password" value={form.new_password} onChange={e => setForm({ ...form, new_password: e.target.value })} required className="w-full rounded-lg border border-border bg-background px-3 py-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">{t('modules:settings.confirmPassword', 'Confirm Password')}</label>
+            <input type="password" value={form.new_password_confirmation} onChange={e => setForm({ ...form, new_password_confirmation: e.target.value })} required className="w-full rounded-lg border border-border bg-background px-3 py-2" />
+          </div>
+          <button type="submit" className="w-full rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+            {t('modules:settings.updatePassword', 'Update Password')}
+          </button>
+        </form>
       </div>
     </div>
   );
@@ -352,9 +454,11 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
+            <BodyOverflowReset />
             <Routes>
               <Route path="/login" element={<LoginPage />} />
-              <Route element={<MainLayout />}>
+              <Route path="/change-password" element={<ChangePasswordPage />} />
+              <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/admin" element={<AdminDashboardPage />} />
                 <Route path="/enterprise" element={<EnterpriseMonitoringPage />} />
@@ -371,10 +475,13 @@ function App() {
                 <Route path="/workers" element={<WorkersPage />} />
                 <Route path="/training" element={<TrainingPage />} />
                 <Route path="/ppe" element={<PpePage />} />
+                <Route path="/environment" element={<EnvironmentPage />} />
                 <Route path="/library" element={<LibraryPage />} />
                 <Route path="/community" element={<CommunityPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/projects" element={<ProjectsPage />} />
               </Route>
               <Route path="/" element={<LoginPage />} />
               <Route path="*" element={<NotFoundPage />} />

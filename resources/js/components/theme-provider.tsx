@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
+type ThemeMode = 'light' | 'dark' | 'system';
+
 interface ThemeContextType {
   isDark: boolean;
+  theme: ThemeMode;
   toggle: () => void;
-  setTheme: (theme: 'light' | 'dark') => void;
+  setTheme: (theme: ThemeMode) => void;
   colors: {
     primaryLight: string;
     primaryDark: string;
@@ -16,12 +19,14 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    const stored = localStorage.getItem('theme');
-    if (stored) return stored === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const [theme, setThemeState] = useState<ThemeMode>(() => {
+    if (typeof window === 'undefined') return 'system';
+    const stored = localStorage.getItem('theme') as ThemeMode | null;
+    if (stored && ['light', 'dark', 'system'].includes(stored)) return stored;
+    return 'system';
   });
+
+  const [isDark, setIsDark] = useState(false);
 
   // Company colors (can be fetched from API)
   const [colors] = useState({
@@ -34,26 +39,54 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    
-    if (isDark) {
+
+    let shouldBeDark: boolean;
+    if (theme === 'system') {
+      shouldBeDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } else {
+      shouldBeDark = theme === 'dark';
+    }
+
+    setIsDark(shouldBeDark);
+
+    if (shouldBeDark) {
       root.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
     } else {
       root.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
     }
+
+    localStorage.setItem('theme', theme);
 
     // Apply company colors as CSS variables
     root.style.setProperty('--company-primary-light', colors.primaryLight);
     root.style.setProperty('--company-primary-dark', colors.primaryDark);
     root.style.setProperty('--company-accent', colors.accent);
-  }, [isDark, colors]);
+  }, [theme, colors]);
 
-  const toggle = () => setIsDark(!isDark);
-  const setTheme = (theme: 'light' | 'dark') => setIsDark(theme === 'dark');
+  // Listen for system theme changes when in system mode
+  useEffect(() => {
+    if (theme !== 'system') return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => {
+      const root = document.documentElement;
+      setIsDark(e.matches);
+      if (e.matches) {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+    };
+
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, [theme]);
+
+  const toggle = () => setThemeState(isDark ? 'light' : 'dark');
+  const setTheme = (newTheme: ThemeMode) => setThemeState(newTheme);
 
   return (
-    <ThemeContext.Provider value={{ isDark, toggle, setTheme, colors }}>
+    <ThemeContext.Provider value={{ isDark, theme, toggle, setTheme, colors }}>
       {children}
     </ThemeContext.Provider>
   );

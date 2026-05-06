@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
-import { Plus, ClipboardCheck, Settings, FileText, Wrench, Map, Truck, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, ClipboardCheck, Settings, FileText, Wrench, Map, Truck, TrendingUp, AlertTriangle, CheckCircle, ChevronRight, X } from 'lucide-react';
 import { api } from '../lib/api';
 import { EmptyState } from '../components/empty-state';
 import { SkeletonTable } from '../components/skeleton';
+import { Modal, FormField, FormActions } from '../components/modal';
 
 interface InspectionTemplate {
   id: string;
@@ -21,80 +22,58 @@ interface ChecklistItem {
   weight: number;
 }
 
-const inspectionTemplates: InspectionTemplate[] = [
-  {
-    id: 'equipment-1',
-    name: 'Equipment Safety Check',
-    category: 'equipment',
-    items: [
-      { id: 'e1', question: 'Equipment has valid inspection certificate', required: true, weight: 20 },
-      { id: 'e2', question: 'Safety guards are in place', required: true, weight: 20 },
-      { id: 'e3', question: 'Emergency stop functional', required: true, weight: 25 },
-      { id: 'e4', question: 'Operator trained and certified', required: true, weight: 20 },
-      { id: 'e5', question: 'Maintenance log up to date', required: false, weight: 15 },
-    ],
-  },
-  {
-    id: 'area-1',
-    name: 'Toilets & Sanitation',
-    category: 'area',
-    items: [
-      { id: 'a1', question: 'Cleaning schedule posted', required: true, weight: 15 },
-      { id: 'a2', question: 'Hand soap and sanitizer available', required: true, weight: 20 },
-      { id: 'a3', question: 'Ventilation working', required: true, weight: 15 },
-      { id: 'a4', question: 'No blocked drains', required: true, weight: 20 },
-      { id: 'a5', question: 'Lighting adequate', required: false, weight: 15 },
-      { id: 'a6', question: 'PPE available', required: true, weight: 15 },
-    ],
-  },
-  {
-    id: 'area-2',
-    name: 'Base Vie (Living Quarters)',
-    category: 'area',
-    items: [
-      { id: 'b1', question: 'Fire extinguishers accessible', required: true, weight: 20 },
-      { id: 'b2', question: 'Emergency exits clear', required: true, weight: 20 },
-      { id: 'b3', question: 'Electrical outlets safe', required: true, weight: 20 },
-      { id: 'b4', question: 'First aid kit stocked', required: true, weight: 20 },
-      { id: 'b5', question: 'Waste disposal organized', required: false, weight: 20 },
-    ],
-  },
-  {
-    id: 'area-3',
-    name: 'Stockage Area',
-    category: 'area',
-    items: [
-      { id: 's1', question: 'Materials properly stacked', required: true, weight: 25 },
-      { id: 's2', question: 'Aisles clear and marked', required: true, weight: 20 },
-      { id: 's3', question: 'Hazardous materials labeled', required: true, weight: 25 },
-      { id: 's4', question: 'PPE signage visible', required: true, weight: 15 },
-      { id: 's5', question: 'Spill kit available', required: true, weight: 15 },
-    ],
-  },
-  {
-    id: 'vehicle-1',
-    name: 'Vehicle Pre-Start Check',
-    category: 'vehicle',
-    items: [
-      { id: 'v1', question: 'Brakes functional', required: true, weight: 25 },
-      { id: 'v2', question: 'Lights and signals working', required: true, weight: 20 },
-      { id: 'v3', question: 'Tires in good condition', required: true, weight: 20 },
-      { id: 'v4', question: 'Mirrors intact', required: true, weight: 15 },
-      { id: 'v5', question: 'Seatbelt functional', required: true, weight: 20 },
-    ],
-  },
-];
+const defaultTemplates: InspectionTemplate[] = [];
 
 export default function InspectionsPage() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [showTemplateBuilder, setShowTemplateBuilder] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'equipment' | 'area' | 'vehicle'>('all');
+  const [showModal, setShowModal] = useState(false);
+  const [selectedInspection, setSelectedInspection] = useState<any>(null);
+  const [form, setForm] = useState({ template_id: '', location: '', scheduled_date: '', notes: '' });
 
   const { data: inspections, isLoading } = useQuery({
     queryKey: ['inspections'],
     queryFn: async () => {
-      const response = await api.get('/inspections');
-      return response.data.data.items;
+      try {
+        const response = await api.get('/inspections');
+        return response.data.data.items;
+      } catch {
+        return [];
+      }
+    },
+  });
+
+  const { data: templates } = useQuery({
+    queryKey: ['inspection-templates'],
+    queryFn: async () => {
+      try {
+        const response = await api.get('/inspection-templates');
+        return response.data.data;
+      } catch {
+        return defaultTemplates;
+      }
+    },
+  });
+
+  const { data: inspectionItems } = useQuery({
+    queryKey: ['inspection-items', selectedInspection?.id],
+    queryFn: async () => {
+      try { const r = await api.get(`/inspection-items?inspection_id=${selectedInspection.id}`); return r.data.data.items; } catch { return []; }
+    },
+    enabled: !!selectedInspection,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (data: typeof form) => {
+      const response = await api.post('/inspections', data);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inspections'] });
+      setShowModal(false);
+      setForm({ template_id: '', location: '', scheduled_date: '', notes: '' });
     },
   });
 
@@ -108,9 +87,9 @@ export default function InspectionsPage() {
   };
 
   const getRiskLevel = (score: number) => {
-    if (score >= 90) return { level: 'Low', color: 'text-green-500', icon: CheckCircle };
-    if (score >= 70) return { level: 'Medium', color: 'text-amber-500', icon: TrendingUp };
-    return { level: 'High', color: 'text-red-500', icon: AlertTriangle };
+    if (score >= 90) return { level: t('common:low'), color: 'text-green-500', icon: CheckCircle };
+    if (score >= 70) return { level: t('common:medium'), color: 'text-amber-500', icon: TrendingUp };
+    return { level: t('common:high'), color: 'text-red-500', icon: AlertTriangle };
   };
 
   const getCategoryIcon = (category: string) => {
@@ -123,15 +102,15 @@ export default function InspectionsPage() {
   };
 
   const filteredTemplates = selectedCategory === 'all' 
-    ? inspectionTemplates 
-    : inspectionTemplates.filter(t => t.category === selectedCategory);
+    ? (templates || []) 
+    : (templates || []).filter((t: InspectionTemplate) => t.category === selectedCategory);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{t('navigation.inspections')}</h1>
-          <p className="text-muted-foreground">Standardized inspection system with templates & auto-scoring</p>
+          <h1 className="text-2xl font-bold">{t('navigation:inspections')}</h1>
+          <p className="text-muted-foreground">{t('modules:inspections.subtitle', 'Standardized inspection system with templates & auto-scoring')}</p>
         </div>
         <div className="flex gap-2">
           <button 
@@ -139,11 +118,11 @@ export default function InspectionsPage() {
             className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
           >
             <Settings className="h-4 w-4" />
-            Template Builder
+            {t('modules:inspections.templateBuilder', 'Template Builder')}
           </button>
-          <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+          <button onClick={() => setShowModal(true)} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
             <Plus className="h-4 w-4" />
-            New Inspection
+            {t('modules:inspections.newInspection', 'New Inspection')}
           </button>
         </div>
       </div>
@@ -158,31 +137,31 @@ export default function InspectionsPage() {
             className="rounded-xl border border-border bg-card p-6"
           >
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-semibold">Inspection Templates</h2>
+              <h2 className="font-semibold">{t('modules:inspections.templates', 'Inspection Templates')}</h2>
               <div className="flex gap-2">
                 <button 
                   onClick={() => setSelectedCategory('all')}
                   className={`rounded-lg px-3 py-1 text-xs font-medium ${selectedCategory === 'all' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'}`}
                 >
-                  All
+                  {t('common:all', 'All')}
                 </button>
                 <button 
                   onClick={() => setSelectedCategory('equipment')}
                   className={`rounded-lg px-3 py-1 text-xs font-medium ${selectedCategory === 'equipment' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'}`}
                 >
-                  Equipment
+                  {t('modules:inspections.equipment', 'Equipment')}
                 </button>
                 <button 
                   onClick={() => setSelectedCategory('area')}
                   className={`rounded-lg px-3 py-1 text-xs font-medium ${selectedCategory === 'area' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'}`}
                 >
-                  Areas
+                  {t('modules:inspections.areas', 'Areas')}
                 </button>
                 <button 
                   onClick={() => setSelectedCategory('vehicle')}
                   className={`rounded-lg px-3 py-1 text-xs font-medium ${selectedCategory === 'vehicle' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'}`}
                 >
-                  Vehicles
+                  {t('modules:inspections.vehicles', 'Vehicles')}
                 </button>
               </div>
             </div>
@@ -203,7 +182,7 @@ export default function InspectionsPage() {
                       <span className="text-xs text-muted-foreground capitalize">{template.category}</span>
                     </div>
                     <h3 className="font-semibold mb-2">{template.name}</h3>
-                    <p className="text-sm text-muted-foreground">{template.items.length} checklist items</p>
+                    <p className="text-sm text-muted-foreground">{template.items.length} {t('modules:inspections.checklistItems', 'checklist items')}</p>
                   </motion.div>
                 );
               })}
@@ -223,12 +202,12 @@ export default function InspectionsPage() {
             <table className="w-full">
               <thead className="border-b border-border bg-muted/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Reference</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Type</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Date</th>
-                  <th className="px-4 py-3 text-center text-sm font-medium">Result</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium">Score</th>
-                  <th className="px-4 py-3 text-center text-sm font-medium">Risk Level</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">{t('modules:inspections.reference', 'Reference')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">{t('modules:inspections.type', 'Type')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">{t('common:date')}</th>
+                  <th className="px-4 py-3 text-center text-sm font-medium">{t('modules:inspections.result', 'Result')}</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium">{t('modules:inspections.score', 'Score')}</th>
+                  <th className="px-4 py-3 text-center text-sm font-medium">{t('modules:inspections.riskLevel', 'Risk Level')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -241,7 +220,8 @@ export default function InspectionsPage() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="border-b border-border last:border-0 hover:bg-muted/30"
+                      className="border-b border-border last:border-0 hover:bg-muted/30 cursor-pointer"
+                      onClick={() => setSelectedInspection(inspection)}
                     >
                       <td className="px-4 py-3 text-sm font-medium">{inspection.reference}</td>
                       <td className="px-4 py-3 text-sm">{inspection.type}</td>
@@ -258,6 +238,7 @@ export default function InspectionsPage() {
                           {risk.level}
                         </div>
                       </td>
+                      <td className="px-4 py-3 text-right"><ChevronRight className="h-4 w-4 text-muted-foreground" /></td>
                     </motion.tr>
                   );
                 })}
@@ -267,15 +248,88 @@ export default function InspectionsPage() {
         ) : (
           <div className="p-8">
             <EmptyState
-              title="No inspections"
-              description="Start by creating your first inspection using a template"
-              action="Create Inspection"
+              title={t('messages:empty.title')}
+              description={t('modules:inspections.noData', 'Start by creating your first inspection using a template')}
+              action={t('modules:inspections.newInspection', 'Create Inspection')}
               icon={<ClipboardCheck className="h-8 w-8" />}
-              onAction={() => setShowTemplateBuilder(true)}
+              onAction={() => setShowModal(true)}
             />
           </div>
         )}
       </div>
+
+      {/* Inspection Detail Drawer */}
+      <AnimatePresence>
+        {selectedInspection && (
+          <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }}
+            className="fixed inset-y-0 right-0 w-full max-w-lg bg-card border-l border-border shadow-xl z-50 overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-lg font-bold">{selectedInspection.reference}</h2>
+                  <p className="text-sm text-muted-foreground">{selectedInspection.type} &middot; {new Date(selectedInspection.date).toLocaleDateString()}</p>
+                </div>
+                <button onClick={() => setSelectedInspection(null)} className="p-2 rounded-lg hover:bg-muted"><X className="h-5 w-5" /></button>
+              </div>
+
+              <div className="flex items-center gap-4 mb-6">
+                <div className="text-center">
+                  <p className="text-3xl font-bold">{selectedInspection.score}%</p>
+                  <p className="text-xs text-muted-foreground">Score</p>
+                </div>
+                <span className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${getResultColor(selectedInspection.result)}`}>{selectedInspection.result}</span>
+              </div>
+
+              <h3 className="text-sm font-semibold mb-3">{t('modules:inspections.checklistItems', 'Checklist Items')}</h3>
+              <div className="space-y-2">
+                {inspectionItems?.length > 0 ? inspectionItems.map((item: any) => {
+                  const itemStatus = item.status === 'conform' ? 'pass' : item.status === 'non_conform' ? 'fail' : item.status === 'na' ? 'na' : 'pending';
+                  const statusColor = itemStatus === 'pass' ? 'text-green-600 bg-green-500/10' : itemStatus === 'fail' ? 'text-red-600 bg-red-500/10' : itemStatus === 'na' ? 'text-gray-500 bg-gray-500/10' : 'text-amber-600 bg-amber-500/10';
+                  const StatusIcon = itemStatus === 'pass' ? CheckCircle : itemStatus === 'fail' ? AlertTriangle : FileText;
+                  return (
+                    <div key={item.id} className={`rounded-lg border p-3 ${itemStatus === 'fail' ? 'border-red-200 bg-red-500/5' : 'border-border'}`}>
+                      <div className="flex items-start gap-3">
+                        <StatusIcon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${itemStatus === 'pass' ? 'text-green-500' : itemStatus === 'fail' ? 'text-red-500' : 'text-gray-400'}`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium">{item.question || item.template_item?.question}</p>
+                          {item.note && <p className="text-xs text-muted-foreground mt-1">{item.note}</p>}
+                          {item.severity && <p className="text-xs text-muted-foreground">Severity: {item.severity}</p>}
+                        </div>
+                        <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium flex-shrink-0 ${statusColor}`}>{itemStatus}</span>
+                      </div>
+                    </div>
+                  );
+                }) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">{t('modules:inspections.noItems', 'No checklist items recorded')}</p>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={t('modules:inspections.newInspection', 'New Inspection')}>
+        <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(form); }} className="space-y-4">
+          <FormField label={t('modules:inspections.templates', 'Template')} required>
+            <select value={form.template_id} onChange={(e) => setForm({ ...form, template_id: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background" required>
+              <option value="">{t('modules:inspections.selectTemplate', 'Select a template')}</option>
+              {(templates || []).map((tpl: InspectionTemplate) => (
+                <option key={tpl.id} value={tpl.id}>{tpl.name}</option>
+              ))}
+            </select>
+          </FormField>
+          <FormField label={t('modules:sor.location', 'Location')}>
+            <input type="text" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background" />
+          </FormField>
+          <FormField label={t('common:date')} required>
+            <input type="date" value={form.scheduled_date} onChange={(e) => setForm({ ...form, scheduled_date: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background" required />
+          </FormField>
+          <FormField label={t('common:notes')}>
+            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background" rows={3} />
+          </FormField>
+          <FormActions onCancel={() => setShowModal(false)} onSubmit={() => createMutation.mutate(form)} isPending={createMutation.isPending} submitLabel={t('modules:inspections.newInspection', 'Create Inspection')} />
+        </form>
+      </Modal>
     </div>
   );
 }

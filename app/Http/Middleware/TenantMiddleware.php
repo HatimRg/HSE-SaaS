@@ -64,8 +64,6 @@ class TenantMiddleware
         $models = [
             'App\Models\Project',
             'App\Models\Worker',
-            'App\Models\KpiReport',
-            'App\Models\SorReport',
             'App\Models\WorkPermit',
             'App\Models\Inspection',
             'App\Models\TrainingSession',
@@ -75,6 +73,28 @@ class TenantMiddleware
             'App\Models\CommunityPost',
             'App\Models\IncidentInvestigation',
             'App\Models\RiskAssessment',
+            // New schema models (replacing KpiReport/SorReport)
+            'App\Models\HseEvent',
+            'App\Models\EventAction',
+            'App\Models\Hazard',
+            'App\Models\RiskItem',
+            'App\Models\KpiDefinition',
+            'App\Models\KpiValue',
+            'App\Models\PermitType',
+            'App\Models\InspectionTemplate',
+            'App\Models\WorkerDocument',
+            'App\Models\WorkerPpeIssue',
+            'App\Models\PpeStock',
+            'App\Models\EnvironmentalReading',
+            'App\Models\WasteExport',
+            'App\Models\CommunityReport',
+            'App\Models\CommunityPostComment',
+            'App\Models\TrainingParticipant',
+            'App\Models\WorkerProjectAssignment',
+            'App\Models\WorkerSanction',
+            // Deprecated (kept for backward compat)
+            'App\Models\KpiReport',
+            'App\Models\SorReport',
         ];
 
         foreach ($models as $model) {

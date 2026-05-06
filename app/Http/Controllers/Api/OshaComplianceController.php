@@ -7,6 +7,7 @@ use App\Models\Inspection;
 use App\Models\Worker;
 use App\Models\TrainingSession;
 use App\Models\WorkPermit;
+use App\Models\HseEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -315,7 +316,7 @@ class OshaComplianceController extends BaseController
             $riskFactors = [];
 
             // Incident history
-            $recentIncidents = $project->sorReports()
+            $recentIncidents = $project->hseEvents()
                 ->where('created_at', '>=', now()->subDays(30))
                 ->count();
             
@@ -360,7 +361,7 @@ class OshaComplianceController extends BaseController
                     'location' => $project->location,
                     'risk_score' => $riskScore,
                     'risk_factors' => $riskFactors,
-                    'last_incident' => $project->sorReports()
+                    'last_incident' => $project->hseEvents()
                         ->orderBy('created_at', 'desc')
                         ->value('created_at'),
                 ]);
@@ -563,12 +564,12 @@ class OshaComplianceController extends BaseController
         $projectId = $request->project_id;
         $year = $request->year ?? date('Y');
 
-        $query = \App\Models\SorReport::whereYear('incident_date', $year);
+        $query = HseEvent::whereYear('occurred_at', $year);
         if ($projectId) {
             $query->where('project_id', $projectId);
         }
 
-        $recordables = $query->where('severity', '>=', 3)->get();
+        $recordables = $query->whereIn('severity', ['high', 'critical'])->get();
 
         return $this->successResponse([
             'count' => $recordables->count(),
@@ -585,9 +586,9 @@ class OshaComplianceController extends BaseController
         $year = $request->year ?? date('Y');
         $hours = $request->hours ?? 200000;
 
-        $recordableCount = \App\Models\SorReport::whereYear('incident_date', $year)
+        $recordableCount = HseEvent::whereYear('occurred_at', $year)
             ->when($projectId, fn($q) => $q->where('project_id', $projectId))
-            ->where('severity', '>=', 3)
+            ->whereIn('severity', ['high', 'critical'])
             ->count();
 
         $trir = ($recordableCount * 200000) / $hours;
@@ -608,9 +609,9 @@ class OshaComplianceController extends BaseController
         $year = $request->year ?? date('Y');
         $hours = $request->hours ?? 200000;
 
-        $dartCount = \App\Models\SorReport::whereYear('incident_date', $year)
+        $dartCount = HseEvent::whereYear('occurred_at', $year)
             ->when($projectId, fn($q) => $q->where('project_id', $projectId))
-            ->where('severity', '>=', 4)
+            ->where('severity', 'critical')
             ->count();
 
         $dartRate = ($dartCount * 200000) / $hours;
@@ -631,9 +632,10 @@ class OshaComplianceController extends BaseController
         $year = $request->year ?? date('Y');
         $hours = $request->hours ?? 1000000;
 
-        $ltiCount = \App\Models\SorReport::whereYear('incident_date', $year)
+        $ltiCount = HseEvent::whereYear('occurred_at', $year)
             ->when($projectId, fn($q) => $q->where('project_id', $projectId))
-            ->where('severity', '>=', 5)
+            ->where('severity', 'critical')
+            ->where('type', 'incident')
             ->count();
 
         $ltifr = ($ltiCount * 1000000) / $hours;
@@ -653,10 +655,10 @@ class OshaComplianceController extends BaseController
         $projectId = $request->project_id;
         $year = $request->year ?? date('Y');
 
-        $entries = \App\Models\SorReport::whereYear('incident_date', $year)
+        $entries = HseEvent::whereYear('occurred_at', $year)
             ->when($projectId, fn($q) => $q->where('project_id', $projectId))
             ->with(['project', 'reporter'])
-            ->orderBy('incident_date')
+            ->orderBy('occurred_at')
             ->get();
 
         return $this->successResponse($entries);

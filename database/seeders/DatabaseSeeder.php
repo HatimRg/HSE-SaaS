@@ -14,13 +14,20 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ProjectSeeder::class,
             WorkerSeeder::class,
+            KpiDefinitionSeeder::class,
             KpiReportSeeder::class,
+            HseEventSeeder::class,
             SorReportSeeder::class,
             WorkPermitSeeder::class,
             InspectionSeeder::class,
             TrainingSessionSeeder::class,
             PpeItemSeeder::class,
             LibrarySeeder::class,
+            EnvironmentSeeder::class,
+            PermitTypeSeeder::class,
+            InspectionTemplateSeeder::class,
+            HazardSeeder::class,
+            WorkerDataSeeder::class,
         ]);
     }
 }

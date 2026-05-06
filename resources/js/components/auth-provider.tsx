@@ -47,6 +47,7 @@ interface User {
   };
   must_change_password: boolean;
   last_login_at?: string;
+  created_at?: string;
 }
 
 interface AuthContextType {
@@ -101,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       api.defaults.headers.Authorization = `Bearer ${data.token}`;
       queryClient.setQueryData(['user'], data.user);
       
-      toast.success(t('common:success'));
+      toast.success(t('success'));
       
       if (data.must_change_password) {
         navigate('/change-password');
@@ -110,22 +111,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || t('messages:errors.unauthorized'));
+      toast.error(error.response?.data?.message || t('messages:errors.unauthorized', 'Invalid credentials'));
     },
   });
 
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await api.post('/logout');
+      try {
+        await api.post('/logout');
+      } catch {
+        // Ignore API errors on logout - always clear local state
+      }
     },
-    onSuccess: () => {
+    onSettled: () => {
       setToken(null);
       localStorage.removeItem('auth_token');
       delete api.defaults.headers.Authorization;
       queryClient.clear();
       navigate('/login');
-      toast.success(t('common:logout'));
     },
   });
 
@@ -137,10 +141,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['user'], data);
-      toast.success(t('common:saved'));
+      toast.success(t('saved'));
     },
     onError: () => {
-      toast.error(t('common:error'));
+      toast.error(t('error'));
     },
   });
 
@@ -154,11 +158,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     },
     onSuccess: () => {
-      toast.success(t('common:saved'));
+      toast.success(t('saved'));
       navigate('/dashboard');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || t('common:error'));
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 

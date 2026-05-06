@@ -72,6 +72,11 @@ class TrainingSessionSeeder extends Seeder
             ],
         ];
 
+        // Skip if training sessions already exist
+        if (TrainingSession::withTrashed()->where('company_id', $company->id)->exists()) {
+            return;
+        }
+
         foreach ($sessions as $session) {
             TrainingSession::create([
                 ...$session,

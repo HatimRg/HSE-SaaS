@@ -53,13 +53,17 @@ export default function RiskAssessmentPage() {
   const { data: riskData, isLoading, refetch } = useQuery({
     queryKey: ['risk-assessment', selectedProject, selectedSeverity, selectedStatus],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      if (selectedProject !== 'all') params.append('project_id', selectedProject);
-      if (selectedSeverity !== 'all') params.append('severity', selectedSeverity);
-      if (selectedStatus !== 'all') params.append('status', selectedStatus);
-      
-      const response = await api.get(`/risk-assessment/dashboard?${params}`);
-      return response.data.data;
+      try {
+        const params = new URLSearchParams();
+        if (selectedProject !== 'all') params.append('project_id', selectedProject);
+        if (selectedSeverity !== 'all') params.append('severity', selectedSeverity);
+        if (selectedStatus !== 'all') params.append('status', selectedStatus);
+        
+        const response = await api.get(`/risk-assessment/dashboard?${params}`);
+        return response.data.data;
+      } catch {
+        return null;
+      }
     },
   });
 
@@ -96,9 +100,9 @@ export default function RiskAssessmentPage() {
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Risk Assessment</h1>
+              <h1 className="text-3xl font-bold text-foreground">{t('modules:risk.title', 'Risk Assessment')}</h1>
               <p className="text-muted-foreground">
-                Comprehensive risk management and mitigation tracking
+                {t('modules:risk.subtitle', 'Comprehensive risk management and mitigation tracking')}
               </p>
             </div>
             
@@ -110,7 +114,7 @@ export default function RiskAssessmentPage() {
                   onChange={(e) => setSelectedProject(e.target.value)}
                   className="px-3 py-2 bg-background border border-border rounded-lg text-sm"
                 >
-                  <option value="all">All Projects</option>
+                  <option value="all">{t('modules:risk.allProjects', 'All Projects')}</option>
                 </select>
                 
                 <select
@@ -118,11 +122,11 @@ export default function RiskAssessmentPage() {
                   onChange={(e) => setSelectedSeverity(e.target.value)}
                   className="px-3 py-2 bg-background border border-border rounded-lg text-sm"
                 >
-                  <option value="all">All Levels</option>
-                  <option value="critical">Critical</option>
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
+                  <option value="all">{t('modules:risk.allLevels', 'All Levels')}</option>
+                  <option value="critical">{t('common:critical')}</option>
+                  <option value="high">{t('common:high')}</option>
+                  <option value="medium">{t('common:medium')}</option>
+                  <option value="low">{t('common:low')}</option>
                 </select>
                 
                 <select
@@ -130,12 +134,12 @@ export default function RiskAssessmentPage() {
                   onChange={(e) => setSelectedStatus(e.target.value)}
                   className="px-3 py-2 bg-background border border-border rounded-lg text-sm"
                 >
-                  <option value="all">All Status</option>
-                  <option value="pending_review">Pending Review</option>
-                  <option value="approved">Approved</option>
-                  <option value="mitigated">Mitigated</option>
-                  <option value="monitored">Monitored</option>
-                  <option value="closed">Closed</option>
+                  <option value="all">{t('modules:risk.allStatus', 'All Status')}</option>
+                  <option value="pending_review">{t('modules:risk.pendingReview', 'Pending Review')}</option>
+                  <option value="approved">{t('modules:risk.approved', 'Approved')}</option>
+                  <option value="mitigated">{t('modules:risk.mitigated', 'Mitigated')}</option>
+                  <option value="monitored">{t('modules:risk.monitored', 'Monitored')}</option>
+                  <option value="closed">{t('common:closed')}</option>
                 </select>
               </div>
 
@@ -167,7 +171,7 @@ export default function RiskAssessmentPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
               >
                 <Plus className="h-4 w-4" />
-                New Assessment
+                {t('modules:risk.newAssessment', 'New Assessment')}
               </button>
             </div>
           </div>
@@ -185,25 +189,25 @@ export default function RiskAssessmentPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[
               {
-                label: 'Total Assessments',
+                label: t('modules:risk.totalAssessments', 'Total Assessments'),
                 value: riskData?.assessments?.total || 0,
                 icon: FileText,
                 color: 'oklch(55% 0.10 250)',
               },
               {
-                label: 'Critical Risks',
+                label: t('modules:risk.criticalRisks', 'Critical Risks'),
                 value: riskData?.high_priority_risks?.filter((r: any) => r.risk_level === 'critical').length || 0,
                 icon: AlertTriangle,
                 color: 'oklch(55% 0.18 25)',
               },
               {
-                label: 'Mitigated',
+                label: t('modules:risk.mitigated', 'Mitigated'),
                 value: riskData?.assessments?.data?.filter((r: any) => r.status === 'mitigated').length || 0,
                 icon: CheckCircle,
                 color: 'oklch(65% 0.15 145)',
               },
               {
-                label: 'Overdue Reviews',
+                label: t('modules:risk.overdueReviews', 'Overdue Reviews'),
                 value: riskData?.overdue_assessments?.length || 0,
                 icon: Clock,
                 color: 'oklch(75% 0.12 85)',
@@ -238,7 +242,7 @@ export default function RiskAssessmentPage() {
             transition={{ delay: 0.3 }}
             className="bg-card border border-border rounded-xl p-6"
           >
-            <h2 className="text-xl font-semibold mb-6">Risk Matrix</h2>
+            <h2 className="text-xl font-semibold mb-6">{t('modules:risk.riskMatrix', 'Risk Matrix')}</h2>
             <RiskMatrix data={riskData?.risk_matrix} />
           </motion.div>
         )}
@@ -251,7 +255,7 @@ export default function RiskAssessmentPage() {
             transition={{ delay: 0.3 }}
             className="bg-card border border-border rounded-xl p-6"
           >
-            <h2 className="text-xl font-semibold mb-6">Risk Assessments</h2>
+            <h2 className="text-xl font-semibold mb-6">{t('modules:risk.riskAssessments', 'Risk Assessments')}</h2>
             
             {isLoading ? (
               <div className="space-y-4">
@@ -263,8 +267,8 @@ export default function RiskAssessmentPage() {
                   <RiskAssessmentCard
                     key={assessment.id}
                     assessment={assessment}
-                    onEdit={() => console.log('Edit assessment:', assessment.id)}
-                    onDelete={() => console.log('Delete assessment:', assessment.id)}
+                    onEdit={() => {}}
+                    onDelete={() => {}}
                     index={index}
                   />
                 ))}
@@ -281,7 +285,7 @@ export default function RiskAssessmentPage() {
             transition={{ delay: 0.3 }}
             className="bg-card border border-border rounded-xl p-6"
           >
-            <h2 className="text-xl font-semibold mb-6">Risk Heat Map</h2>
+            <h2 className="text-xl font-semibold mb-6">{t('modules:risk.riskHeatMap', 'Risk Heat Map')}</h2>
             <RiskHeatMap />
           </motion.div>
         )}
@@ -293,7 +297,7 @@ export default function RiskAssessmentPage() {
           transition={{ delay: 0.4 }}
           className="bg-card border border-border rounded-xl p-6"
         >
-          <h2 className="text-xl font-semibold mb-6">High Priority Risks</h2>
+          <h2 className="text-xl font-semibold mb-6">{t('modules:risk.highPriorityRisks', 'High Priority Risks')}</h2>
           
           <div className="space-y-3">
             {riskData?.high_priority_risks?.slice(0, 5).map((risk: any, index: number) => (
@@ -316,9 +320,9 @@ export default function RiskAssessmentPage() {
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">{risk.description}</p>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>Project: {risk.project?.name}</span>
-                    <span>Score: {risk.risk_score}</span>
-                    <span>Assessor: {risk.assessor?.name}</span>
+                    <span>{t('modules:risk.project', 'Project')}: {risk.project?.name}</span>
+                    <span>{t('modules:risk.score', 'Score')}: {risk.risk_score}</span>
+                    <span>{t('modules:risk.assessor', 'Assessor')}: {risk.assessor?.name}</span>
                   </div>
                 </div>
                 
@@ -352,6 +356,8 @@ export default function RiskAssessmentPage() {
 
 // Risk Matrix Component
 function RiskMatrix({ data }: { data: any }) {
+  const { t } = useTranslation();
+
   const getCellColor = (count: number) => {
     if (count === 0) return 'oklch(95% 0.01 60)';
     if (count <= 2) return 'oklch(65% 0.15 145)';
@@ -359,8 +365,20 @@ function RiskMatrix({ data }: { data: any }) {
     return 'oklch(55% 0.18 25)';
   };
 
-  const likelihoodLabels = ['Very Rare', 'Rare', 'Possible', 'Likely', 'Very Likely'];
-  const severityLabels = ['Minor', 'Moderate', 'Major', 'Severe', 'Catastrophic'];
+  const likelihoodLabels = [
+    t('modules:risk.veryRare', 'Very Rare'),
+    t('modules:risk.rare', 'Rare'),
+    t('modules:risk.possible', 'Possible'),
+    t('modules:risk.likely', 'Likely'),
+    t('modules:risk.veryLikely', 'Very Likely'),
+  ];
+  const severityLabels = [
+    t('modules:risk.minor', 'Minor'),
+    t('modules:risk.moderate', 'Moderate'),
+    t('modules:risk.major', 'Major'),
+    t('modules:risk.severe', 'Severe'),
+    t('modules:risk.catastrophic', 'Catastrophic'),
+  ];
 
   return (
     <div className="overflow-x-auto">
@@ -368,7 +386,7 @@ function RiskMatrix({ data }: { data: any }) {
         <table className="w-full">
           <thead>
             <tr>
-              <th className="p-2 text-sm font-medium">Severity/Likelihood</th>
+              <th className="p-2 text-sm font-medium">{t('modules:risk.severityLikelihood', 'Severity / Likelihood')}</th>
               {likelihoodLabels.map((label, index) => (
                 <th key={index} className="p-2 text-sm font-medium text-center">{label}</th>
               ))}
@@ -407,6 +425,7 @@ function RiskAssessmentCard({ assessment, onEdit, onDelete, index }: {
   onDelete: () => void;
   index: number;
 }) {
+  const { t } = useTranslation();
   const getRiskColor = (level: string) => {
     switch (level) {
       case 'critical': return 'oklch(55% 0.18 25)';
@@ -457,10 +476,10 @@ function RiskAssessmentCard({ assessment, onEdit, onDelete, index }: {
           <p className="text-sm text-muted-foreground mb-3">{assessment.description}</p>
           
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <span>Score: {assessment.risk_score}</span>
-            <span>Likelihood: {assessment.likelihood}</span>
-            <span>Severity: {assessment.severity}</span>
-            <span>Category: {assessment.risk_category}</span>
+            <span>{t('modules:risk.score', 'Score')}: {assessment.risk_score}</span>
+            <span>{t('modules:risk.likelihood', 'Likelihood')}: {assessment.likelihood}</span>
+            <span>{t('modules:risk.severity', 'Severity')}: {assessment.severity}</span>
+            <span>{t('modules:risk.category', 'Category')}: {assessment.risk_category}</span>
           </div>
         </div>
         
@@ -482,10 +501,10 @@ function RiskAssessmentCard({ assessment, onEdit, onDelete, index }: {
       
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-4">
-          <span>Project: {assessment.project?.name}</span>
-          <span>Assessor: {assessment.assessor?.name}</span>
+          <span>{t('modules:risk.project', 'Project')}: {assessment.project?.name}</span>
+          <span>{t('modules:risk.assessor', 'Assessor')}: {assessment.assessor?.name}</span>
         </div>
-        <span>Review: {new Date(assessment.review_date).toLocaleDateString()}</span>
+        <span>{t('modules:risk.review', 'Review')}: {new Date(assessment.review_date).toLocaleDateString()}</span>
       </div>
     </motion.div>
   );
@@ -493,14 +512,18 @@ function RiskAssessmentCard({ assessment, onEdit, onDelete, index }: {
 
 // Risk Heat Map Component
 function RiskHeatMap() {
-  // Mock data for demonstration
-  const projects = [
-    { name: 'Project A', risk: 85, location: 'New York' },
-    { name: 'Project B', risk: 45, location: 'Los Angeles' },
-    { name: 'Project C', risk: 92, location: 'Chicago' },
-    { name: 'Project D', risk: 23, location: 'Houston' },
-    { name: 'Project E', risk: 67, location: 'Phoenix' },
-  ];
+  const { t } = useTranslation();
+  const { data: projects } = useQuery({
+    queryKey: ['risk-heatmap-projects'],
+    queryFn: async () => {
+      try {
+        const r = await api.get('/risk-assessment/heatmap');
+        return r.data.data;
+      } catch {
+        return [];
+      }
+    },
+  });
 
   const getHeatColor = (risk: number) => {
     if (risk >= 80) return 'oklch(55% 0.18 25)';
@@ -512,7 +535,7 @@ function RiskHeatMap() {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {projects.map((project, index) => (
+      {(projects || []).map((project: any, index: number) => (
         <motion.div
           key={project.name}
           initial={{ opacity: 0, scale: 0.9 }}
@@ -522,17 +545,17 @@ function RiskHeatMap() {
         >
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-medium">{project.name}</h3>
-            <span className="text-2xl font-bold" style={{ color: getHeatColor(project.risk) }}>
-              {project.risk}
+            <span className="text-2xl font-bold" style={{ color: getHeatColor(project.risk_score || project.risk || 0) }}>
+              {project.risk_score || project.risk || 0}
             </span>
           </div>
-          <p className="text-sm text-muted-foreground mb-3">{project.location}</p>
+          <p className="text-sm text-muted-foreground mb-3">{project.location || '—'}</p>
           <div className="h-2 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{
-                width: `${project.risk}%`,
-                backgroundColor: getHeatColor(project.risk),
+                width: `${project.risk_score || project.risk || 0}%`,
+                backgroundColor: getHeatColor(project.risk_score || project.risk || 0),
               }}
             />
           </div>
@@ -547,6 +570,7 @@ function CreateAssessmentModal({ onClose, onSuccess }: {
   onClose: () => void;
   onSuccess: () => void;
 }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -570,11 +594,11 @@ function CreateAssessmentModal({ onClose, onSuccess }: {
         animate={{ opacity: 1, scale: 1 }}
         className="bg-card rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
       >
-        <h2 className="text-xl font-semibold mb-6">Create Risk Assessment</h2>
+        <h2 className="text-xl font-semibold mb-6">{t('modules:risk.createAssessment', 'Create Risk Assessment')}</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Title</label>
+            <label className="block text-sm font-medium mb-2">{t('common:name')}</label>
             <input
               type="text"
               value={formData.title}
@@ -585,7 +609,7 @@ function CreateAssessmentModal({ onClose, onSuccess }: {
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-2">Description</label>
+            <label className="block text-sm font-medium mb-2">{t('common:description')}</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -597,22 +621,22 @@ function CreateAssessmentModal({ onClose, onSuccess }: {
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Risk Category</label>
+              <label className="block text-sm font-medium mb-2">{t('modules:risk.category', 'Risk Category')}</label>
               <select
                 value={formData.risk_category}
                 onChange={(e) => setFormData({ ...formData, risk_category: e.target.value })}
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="safety">Safety</option>
-                <option value="health">Health</option>
-                <option value="environment">Environment</option>
-                <option value="security">Security</option>
-                <option value="operational">Operational</option>
+                <option value="safety">{t('modules:risk.safety', 'Safety')}</option>
+                <option value="health">{t('dashboard:health', 'Health')}</option>
+                <option value="environment">{t('navigation:environment')}</option>
+                <option value="security">{t('modules:risk.security', 'Security')}</option>
+                <option value="operational">{t('modules:risk.operational', 'Operational')}</option>
               </select>
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-2">Likelihood (1-5)</label>
+              <label className="block text-sm font-medium mb-2">{t('modules:risk.likelihood', 'Likelihood')} (1-5)</label>
               <input
                 type="number"
                 min="1"
@@ -626,7 +650,7 @@ function CreateAssessmentModal({ onClose, onSuccess }: {
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-2">Severity (1-5)</label>
+            <label className="block text-sm font-medium mb-2">{t('modules:risk.severity', 'Severity')} (1-5)</label>
             <input
               type="number"
               min="1"
@@ -644,13 +668,13 @@ function CreateAssessmentModal({ onClose, onSuccess }: {
               onClick={onClose}
               className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted"
             >
-              Cancel
+              {t('common:cancel')}
             </button>
             <button
               type="submit"
               className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
             >
-              Create Assessment
+              {t('modules:risk.createAssessment', 'Create Assessment')}
             </button>
           </div>
         </form>

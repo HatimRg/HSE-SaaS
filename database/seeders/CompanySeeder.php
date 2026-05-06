@@ -9,9 +9,10 @@ class CompanySeeder extends Seeder
 {
     public function run(): void
     {
-        Company::create([
+        Company::firstOrCreate(
+            ['domain' => 'demo.hse-saas.com'],
+            [
             'name' => 'Demo Construction Company',
-            'domain' => 'demo.hse-saas.com',
             'email' => 'admin@demo.com',
             'phone' => '+212 522 123 456',
             'address' => '123 Construction Ave, Casablanca, Morocco',
@@ -31,9 +32,10 @@ class CompanySeeder extends Seeder
             'subscription_expires_at' => now()->addYear(),
         ]);
 
-        Company::create([
+        Company::firstOrCreate(
+            ['domain' => 'test.hse-saas.com'],
+            [
             'name' => 'Test Company',
-            'domain' => 'test.hse-saas.com',
             'email' => 'admin@test.com',
             'is_active' => true,
             'subscription_plan' => 'basic',

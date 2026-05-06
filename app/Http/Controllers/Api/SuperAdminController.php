@@ -394,9 +394,9 @@ class SuperAdminController extends BaseController
             'total_users' => \App\Models\User::count(),
             'total_projects' => \App\Models\Project::count(),
             'total_workers' => \App\Models\Worker::count(),
-            'total_incidents' => \App\Models\SorReport::count(),
+            'total_incidents' => \App\Models\HseEvent::count(),
             'total_inspections' => \App\Models\Inspection::count(),
-            'total_kpi_reports' => \App\Models\KpiReport::count(),
+            'total_kpi_values' => \App\Models\KpiValue::count(),
             'total_work_permits' => \App\Models\WorkPermit::count(),
             'total_training_sessions' => \App\Models\TrainingSession::count(),
         ];

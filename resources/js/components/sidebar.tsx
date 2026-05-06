@@ -20,6 +20,10 @@ import {
   Shield,
   Menu,
   X,
+  ShieldAlert,
+  Search,
+  Activity,
+  TrendingUp,
 } from 'lucide-react';
 import { useAuth } from './auth-provider';
 
@@ -32,17 +36,23 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { path: '/dashboard', label: 'navigation.dashboard', icon: LayoutDashboard },
-  { path: '/kpi', label: 'navigation.kpi', icon: BarChart3 },
-  { path: '/sor', label: 'navigation.sor', icon: AlertTriangle },
-  { path: '/permits', label: 'navigation.permits', icon: FileCheck },
-  { path: '/inspections', label: 'navigation.inspections', icon: ClipboardCheck },
-  { path: '/workers', label: 'navigation.workers', icon: Users },
-  { path: '/training', label: 'navigation.training', icon: GraduationCap },
-  { path: '/ppe', label: 'navigation.ppe', icon: HardHat },
-  { path: '/environment', label: 'navigation.environment', icon: Leaf },
-  { path: '/community', label: 'navigation.community', icon: MessageSquare },
-  { path: '/library', label: 'navigation.library', icon: FolderOpen },
+  { path: '/dashboard', label: 'navigation:dashboard', icon: LayoutDashboard },
+  { path: '/kpi', label: 'navigation:kpi', icon: BarChart3 },
+  { path: '/sor', label: 'navigation:sor', icon: AlertTriangle },
+  { path: '/risk', label: 'navigation:risk', icon: ShieldAlert },
+  { path: '/investigation', label: 'navigation:investigation', icon: Search },
+  { path: '/permits', label: 'navigation:permits', icon: FileCheck },
+  { path: '/inspections', label: 'navigation:inspections', icon: ClipboardCheck },
+  { path: '/osha', label: 'navigation:osha', icon: Shield },
+  { path: '/workers', label: 'navigation:workers', icon: Users },
+  { path: '/training', label: 'navigation:training', icon: GraduationCap },
+  { path: '/ppe', label: 'navigation:ppe', icon: HardHat },
+  { path: '/environment', label: 'navigation:environment', icon: Leaf },
+  { path: '/community', label: 'navigation:community', icon: MessageSquare },
+  { path: '/analytics', label: 'navigation:analytics', icon: TrendingUp },
+  { path: '/library', label: 'navigation:library', icon: FolderOpen },
+  { path: '/users', label: 'navigation:users', icon: Users },
+  { path: '/projects', label: 'navigation:projects', icon: FolderOpen },
 ];
 
 export function Sidebar() {
@@ -296,11 +306,11 @@ export function Sidebar() {
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             }`
           }
-          title={isCollapsed && !isMobile ? t('navigation.settings') : undefined}
+          title={isCollapsed && !isMobile ? t('navigation:settings') : undefined}
         >
           <Settings className="h-5 w-5" />
           {(!isCollapsed || isMobile) && (
-            <span className="text-sm">{t('navigation.settings')}</span>
+            <span className="text-sm">{t('navigation:settings')}</span>
           )}
         </NavLink>
       </div>

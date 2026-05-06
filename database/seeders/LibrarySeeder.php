@@ -12,6 +12,11 @@ class LibrarySeeder extends Seeder
     {
         $company = Company::first();
 
+        // Skip if library folders already exist
+        if (LibraryFolder::withTrashed()->where('company_id', $company->id)->exists()) {
+            return;
+        }
+
         // Create root folders
         $folders = [
             [
